@@ -1,5 +1,7 @@
 package shary
 
+import "github.com/serozhenka/shary/internal/shary/messages"
+
 type Room struct {
 	Clients map[*Client]bool
 }
@@ -12,16 +14,16 @@ func NewRoom() *Room {
 
 func (r *Room) Join(c *Client) {
 	r.Clients[c] = true
+	c.Broadcast(
+		&messages.OutboundWsMessage{
+			Type: messages.OutboudClientJoined,
+			Payload: &messages.OutboundClientJoinedPayload{
+				ClientId: c.Id,
+			},
+		},
+	)
 }
 
 func (r *Room) Leave(c *Client) {
 	delete(r.Clients, c)
-}
-
-func (r *Room) Broadcast(sender *Client, m *WsMessage) {
-	for c := range r.Clients {
-		if c != sender {
-			c.Send <- m
-		}
-	}
 }
