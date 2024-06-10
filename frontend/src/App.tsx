@@ -37,7 +37,7 @@ function App() {
         });
       } else if (message.type === "client_joined") {
         const peerConnection = new RTCPeerConnection();
-        const peer = new Client(message.payload.clientId, peerConnection);
+        const peer = new Client(message.payload.clientId, peerConnection, ws);
         setClients((clients) => {
           const newClients = [...clients, peer];
           clientsRef.current = newClients;
