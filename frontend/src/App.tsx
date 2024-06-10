@@ -72,10 +72,12 @@ function App() {
           return;
         }
 
-        const peerConnection = client.peerConnection!;
-        peerConnection.setRemoteDescription(message.payload.value);
-        peerConnection.createAnswer().then((answer) => {
-          peerConnection.setLocalDescription(new RTCSessionDescription(answer));
+        const pc = client.peerConnection!;
+        pc.setRemoteDescription(
+          new RTCSessionDescription(message.payload.value)
+        );
+        pc.createAnswer().then((answer) => {
+          pc.setLocalDescription(new RTCSessionDescription(answer));
 
           let answerMessage: OutboundAnswerMessage = {
             type: "answer",
@@ -93,9 +95,11 @@ function App() {
         const client = getClient(message.payload.clientId);
         if (client === undefined) return;
 
-        const peerConnection = client.peerConnection!;
-        peerConnection.setRemoteDescription(message.payload.value);
-    }
+        const pc = client.peerConnection!;
+        pc.setRemoteDescription(
+          new RTCSessionDescription(message.payload.value)
+        );
+      }
     };
 
     return () => {
