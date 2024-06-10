@@ -37,9 +37,6 @@ function App() {
         });
       } else if (message.type === "client_joined") {
         const peerConnection = new RTCPeerConnection();
-        peerConnection.ontrack = peerConnection.onicecandidate = () => {
-          console.log("inside track event listener");
-        };
         const peer = new Client(message.payload.clientId, peerConnection);
         setClients((clients) => {
           const newClients = [...clients, peer];
@@ -98,8 +95,7 @@ function App() {
 
         const peerConnection = client.peerConnection!;
         peerConnection.setRemoteDescription(message.payload.value);
-        console.log("ice state", peerConnection.iceConnectionState);
-      }
+    }
     };
 
     return () => {
