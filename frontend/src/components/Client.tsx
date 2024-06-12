@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Client } from "../client";
 import { OutboundOfferMessage } from "../messages/outbound";
+import { Xid } from "xid-ts";
 
 export interface ClientProps {
   client: Client;
@@ -21,7 +22,6 @@ const ClientComponent = ({ client }: ClientProps) => {
   }: OnTrackListenerProps) => {
     if (kind == "audio") setAudioStream(stream);
     if (kind == "video") setVideoStream(stream);
-    console.log("Received remote stream", stream, kind);
   };
 
   const restartAudio = async () => {
@@ -51,17 +51,30 @@ const ClientComponent = ({ client }: ClientProps) => {
   };
 
   const renegotiate = async () => {
-    console.log("Renogiating", client.id);
-    const pc = client.peerConnection!;
-    pc.createOffer().then((offer) => {
-      pc.setLocalDescription(new RTCSessionDescription(offer));
+    try {
+      client.makingOffer = true;
+      const pc = client.peerConnection!;
+      await pc.setLocalDescription();
+
       let offerMessage: OutboundOfferMessage = {
         type: "offer",
-        payload: { value: offer, clientId: client.id },
+        payload: {
+          messageId: new Xid().toString(),
+          value: pc.localDescription!,
+          clientId: client.id,
+        },
       };
       client.ws!.send(JSON.stringify(offerMessage));
-      console.log("Sent offer message", offerMessage);
-    });
+      console.log(
+        "Sent offer message renegotiation",
+        offerMessage.payload.value.type,
+        offerMessage.payload
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      client.makingOffer = false;
+    }
   };
 
   useEffect(() => {
@@ -70,7 +83,12 @@ const ClientComponent = ({ client }: ClientProps) => {
     }
 
     navigator.mediaDevices
-      .getUserMedia({ video: { frameRate: 60, facingMode: { ideal: "user" } } })
+      .getUserMedia({
+        video: {
+          frameRate: 30,
+          facingMode: { ideal: "user" },
+        },
+      })
       .then(
         (stream) => {
           if (client.id === "self") {
@@ -80,7 +98,6 @@ const ClientComponent = ({ client }: ClientProps) => {
 
           const [videoTrack] = stream.getVideoTracks();
           client.peerConnection!.addTrack(videoTrack, stream);
-          console.log("Adding video track", client.id);
         },
         (error) => {
           console.log("error", error);
@@ -109,15 +126,14 @@ const ClientComponent = ({ client }: ClientProps) => {
       .getUserMedia({
         audio: {
           echoCancellation: true,
-          noiseSuppression: false,
-          autoGainControl: false,
+          noiseSuppression: true,
+          autoGainControl: true,
         },
       })
       .then(
         (stream) => {
           const [audioTrack] = stream.getAudioTracks();
           client.peerConnection!.addTrack(audioTrack, stream);
-          console.log("Adding audio track", client.id);
         },
         (error) => {
           console.warn(error.message);

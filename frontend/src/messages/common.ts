@@ -6,6 +6,7 @@ export interface CommonDataMessage {
 export interface CommonOfferMessage {
   type: "offer";
   payload: {
+    messageId: string;
     value: RTCSessionDescriptionInit;
     clientId: string;
   };
@@ -14,6 +15,7 @@ export interface CommonOfferMessage {
 export interface CommonAnswerMessage {
   type: "answer";
   payload: {
+    messageId: string;
     value: RTCSessionDescriptionInit;
     clientId: string;
   };

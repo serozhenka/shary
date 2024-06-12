@@ -6,9 +6,10 @@ import {
 } from "./messages/outbound";
 import { Client } from "./client";
 import ClientComponent from "./components/Client";
+import { Xid } from "xid-ts";
 
 function App() {
-  const client = new Client("self");
+  const client = new Client({ id: "self", isPolite: false });
   const [clients, setClients] = useState([client]);
   const clientsRef = useRef(clients);
 
@@ -23,12 +24,19 @@ function App() {
       console.log("WebSocket connection was opened");
     };
 
-    ws.onmessage = (event) => {
+    ws.onmessage = async (event) => {
       let message: InboundMessage = JSON.parse(event.data);
 
       if (message.type === "init") {
+        console.log("Init message", message.payload.clients.length);
         const existingClients: Client[] = message.payload.clients.map(
-          (client) => new Client(client.id, new RTCPeerConnection(), ws)
+          (client) =>
+            new Client({
+              id: client.id,
+              isPolite: true,
+              peerConnection: new RTCPeerConnection(),
+              ws: ws,
+            })
         );
         setClients((clients) => {
           const newClients = [...clients, ...existingClients];
@@ -36,23 +44,32 @@ function App() {
           return newClients;
         });
       } else if (message.type === "client_joined") {
-        const peerConnection = new RTCPeerConnection();
-        const peer = new Client(message.payload.clientId, peerConnection, ws);
+        console.clear();
+        const pc = new RTCPeerConnection();
+        const peer = new Client({
+          id: message.payload.clientId,
+          isPolite: false,
+          peerConnection: pc,
+          ws: ws,
+        });
         setClients((clients) => {
           const newClients = [...clients, peer];
           clientsRef.current = newClients;
           return newClients;
         });
 
-        peerConnection.createOffer().then((offer) => {
-          peerConnection.setLocalDescription(new RTCSessionDescription(offer));
-          let offerMessage: OutboundOfferMessage = {
-            type: "offer",
-            payload: { value: offer, clientId: peer.id },
-          };
-          ws.send(JSON.stringify(offerMessage));
-          console.log("Sent offer message", offerMessage);
-        });
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(new RTCSessionDescription(offer));
+        let offerMessage: OutboundOfferMessage = {
+          type: "offer",
+          payload: {
+            messageId: new Xid().toString(),
+            value: offer,
+            clientId: peer.id,
+          },
+        };
+        ws.send(JSON.stringify(offerMessage));
+        console.log("Sent offer message", offerMessage.payload);
       } else if (message.type === "client_left") {
         setClients((clients) => {
           const newClients = clients.filter(
@@ -62,7 +79,7 @@ function App() {
           return newClients;
         });
       } else if (message.type === "offer") {
-        console.log("Received offer message", message);
+        console.log("Received offer message", message.payload);
 
         const client = getClient(message.payload.clientId);
         if (client === undefined) {
@@ -73,40 +90,54 @@ function App() {
         }
 
         const pc = client.peerConnection!;
-        pc.setRemoteDescription(
-          new RTCSessionDescription(message.payload.value)
-        );
-        pc.createAnswer().then((answer) => {
-          pc.setLocalDescription(new RTCSessionDescription(answer));
+        const offerCollision =
+          client.makingOffer || pc.signalingState != "stable";
+        const ignoreOffer = offerCollision && !client.isPolite;
+        if (ignoreOffer) {
+          console.log(`Impolite peer: ${client.id}. Ignoring answer`);
+          return;
+        }
 
-          let answerMessage: OutboundAnswerMessage = {
-            type: "answer",
-            payload: {
-              value: answer,
-              clientId: message.payload.clientId,
-            },
-          };
-          ws.send(JSON.stringify(answerMessage));
-          console.log("Sent answer message", answerMessage);
-        });
+        try {
+          await pc.setRemoteDescription(message.payload.value);
+          await pc.setLocalDescription();
+        } catch (err) {
+          console.error(err);
+          return;
+        }
+
+        let answerMessage: OutboundAnswerMessage = {
+          type: "answer",
+          payload: {
+            messageId: new Xid().toString(),
+            value: pc.localDescription!,
+            clientId: message.payload.clientId,
+          },
+        };
+
+        ws.send(JSON.stringify(answerMessage));
+        console.log("Sent answer message", answerMessage.payload);
       } else if (message.type === "answer") {
-        console.log("Received answer message", message);
+        console.log("Received answer message", message.payload);
 
         const client = getClient(message.payload.clientId);
         if (client === undefined) return;
 
         const pc = client.peerConnection!;
-        pc.setRemoteDescription(
-          new RTCSessionDescription(message.payload.value)
-        );
+        try {
+          await pc.setRemoteDescription(message.payload.value);
+        } catch (err) {
+          console.error(err);
+          return;
+        }
       }
     };
 
     return () => {
-      ws.close();
       clients.forEach((client) => {
         client.peerConnection?.close();
       });
+      ws.close();
     };
   }, []);
 
