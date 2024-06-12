@@ -12,7 +12,8 @@ type InboundDataPayload struct {
 }
 
 type InboundOfferPayload struct {
-	Value struct {
+	MessageId string `json:"messageId"`
+	Value     struct {
 		Type string `json:"type"`
 		Sdp  string `json:"sdp"`
 	} `json:"value"`
@@ -20,6 +21,7 @@ type InboundOfferPayload struct {
 }
 
 type InboundAnswerPayload struct {
+	MessageId string `json:"messageId"`
 	ClientId string `json:"clientId"`
 	Value    struct {
 		Type string `json:"type"`

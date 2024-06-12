@@ -33,6 +33,7 @@ type OutboundClientLeftPayload struct {
 }
 
 type OutboundOfferPayload struct {
+	MessageId string `json:"messageId"`
 	Value struct {
 		Type string `json:"type"`
 		Sdp  string `json:"sdp"`
@@ -41,6 +42,7 @@ type OutboundOfferPayload struct {
 }
 
 type OutboundAnswerPayload struct {
+	MessageId string `json:"messageId"`
 	ClientId string `json:"clientId"`
 	Value    struct {
 		Type string `json:"type"`

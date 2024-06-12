@@ -97,6 +97,7 @@ func (c *Client) Reader() {
 				&messages.OutboundWsMessage{
 					Type: messages.OutboudOffer,
 					Payload: &messages.OutboundOfferPayload{
+						MessageId: payload.MessageId,
 						Value:    payload.Value,
 						ClientId: c.Id,
 					},
@@ -108,6 +109,7 @@ func (c *Client) Reader() {
 				&messages.OutboundWsMessage{
 					Type: messages.OutboudAnswer,
 					Payload: &messages.OutboundAnswerPayload{
+						MessageId: payload.MessageId,
 						Value:    payload.Value,
 						ClientId: c.Id,
 					},
