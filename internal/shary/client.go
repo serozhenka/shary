@@ -8,8 +8,6 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/serozhenka/shary/internal/shary/messages"
-	"github.com/serozhenka/shary/internal/shary/utils"
-	"golang.org/x/exp/maps"
 )
 
 const (
@@ -43,14 +41,6 @@ func (c *Client) Send(receiverId string, m *messages.OutboundWsMessage) {
 func (c *Client) Reader() {
 	defer func() {
 		c.Conn.Close()
-		c.Broadcast(
-			&messages.OutboundWsMessage{
-				Type: messages.OutboudClientLeft,
-				Payload: &messages.OutboundClientLeftPayload{
-					ClientId: c.Id,
-				},
-			},
-		)
 		c.Room.Leave(c)
 	}()
 
@@ -125,28 +115,6 @@ func (c *Client) Writer() {
 		ticker.Stop()
 		c.Conn.Close()
 	}()
-
-	c.Messages <- &messages.OutboundWsMessage{
-		Type: messages.OutboudInit,
-		Payload: &messages.OutboundInitPayload{
-			Clients: func() []messages.InitClient {
-				clients := maps.Keys(c.Room.Clients)
-				filteredClients := utils.Filter(
-					clients,
-					func(roomClient *Client) bool {
-						return roomClient != c
-					},
-				)
-
-				return utils.Map(
-					filteredClients,
-					func(c *Client) messages.InitClient {
-						return messages.InitClient{Id: c.Id}
-					},
-				)
-			}(),
-		},
-	}
 
 	for {
 		select {
