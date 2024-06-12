@@ -20,11 +20,13 @@ const ClientComponent = ({ client }: ClientProps) => {
     streams: [stream],
     track: { kind },
   }: OnTrackListenerProps) => {
+    console.log(`Received remote ${kind} stream`, stream);
     if (kind == "audio") setAudioStream(stream);
     if (kind == "video") setVideoStream(stream);
   };
 
   const restartAudio = async () => {
+    // TODO: improve deviceId selection logic
     const devices = await navigator.mediaDevices.enumerateDevices();
     const [device] = devices.filter(
       (d) => d.kind === "audioinput" && d.deviceId !== "default"
@@ -35,8 +37,8 @@ const ClientComponent = ({ client }: ClientProps) => {
         audio: {
           deviceId: device.deviceId,
           echoCancellation: true,
-          noiseSuppression: false,
-          autoGainControl: false,
+          noiseSuppression: true,
+          autoGainControl: true,
         },
       })
       .then((stream) => {
@@ -87,6 +89,8 @@ const ClientComponent = ({ client }: ClientProps) => {
         video: {
           frameRate: 30,
           facingMode: { ideal: "user" },
+          width: 300,
+          height: 300,
         },
       })
       .then(
