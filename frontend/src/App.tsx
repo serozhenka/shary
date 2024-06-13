@@ -12,6 +12,9 @@ function App() {
   const client = new Client({ id: "self", isPolite: false });
   const [clients, setClients] = useState([client]);
   const clientsRef = useRef(clients);
+  const [isVideoEnabled, setVideoEnabled] = useState(true);
+
+  const config = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
   function getClient(id: string): Client | undefined {
     return clientsRef.current.find((client) => client.id == id);
@@ -34,7 +37,7 @@ function App() {
             new Client({
               id: client.id,
               isPolite: true,
-              peerConnection: new RTCPeerConnection(),
+              peerConnection: new RTCPeerConnection(config),
               ws: ws,
             })
         );
@@ -45,7 +48,7 @@ function App() {
         });
       } else if (message.type === "client_joined") {
         console.clear();
-        const pc = new RTCPeerConnection();
+        const pc = new RTCPeerConnection(config);
         const peer = new Client({
           id: message.payload.clientId,
           isPolite: false,
@@ -130,6 +133,26 @@ function App() {
           console.error(err);
           return;
         }
+      } else if (message.type === "iceCandidate") {
+        console.log("Received ice candidate message", message.payload);
+
+        // const client = getClient(message.payload.clientId);
+        // if (client === undefined) return;
+        // const pc = client.peerConnection!;
+
+        // const offerCollision =
+        //   client.makingOffer || pc.signalingState !== "stable";
+        // const ignoreOffer = !client.isPolite && offerCollision;
+
+        // try {
+        //   await client.peerConnection!.addIceCandidate(message.payload.value);
+        //   console.log(`Added ICE candidate, client id: ${client.id}`);
+        // } catch (err) {
+        //   console.error("HERE", err);
+        //   if (!ignoreOffer) {
+        //     console.error(err);
+        //   }
+        // }
       }
     };
 
@@ -143,9 +166,23 @@ function App() {
 
   return (
     <>
-      {clients.map((client) => (
-        <ClientComponent key={client.id} client={client} />
-      ))}
+      <div className="d-flex">
+        {clients.map((client) => (
+          <ClientComponent
+            key={client.id}
+            client={client}
+            isVideoEnabled={isVideoEnabled}
+          />
+        ))}
+      </div>
+      <button
+        onClick={() => {
+          setVideoEnabled((current) => !current);
+        }}
+        className={"btn btn-primary"}
+      >
+        Toogle video
+      </button>
     </>
   );
 }

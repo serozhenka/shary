@@ -20,3 +20,12 @@ export interface CommonAnswerMessage {
     clientId: string;
   };
 }
+
+export interface CommonIceCandidateMessage {
+  type: "iceCandidate";
+  payload: {
+    messageId: string;
+    value: RTCIceCandidate;
+    clientId: string;
+  };
+}

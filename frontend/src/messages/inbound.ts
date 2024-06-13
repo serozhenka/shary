@@ -2,6 +2,7 @@ import {
   CommonDataMessage,
   CommonOfferMessage,
   CommonAnswerMessage,
+  CommonIceCandidateMessage,
 } from "./common";
 
 export interface InboundInitMessage {
@@ -13,6 +14,7 @@ export interface InboundInitMessage {
 export interface InboundDataMessage extends CommonDataMessage {}
 export interface InboundOfferMessage extends CommonOfferMessage {}
 export interface InboundAnswerMessage extends CommonAnswerMessage {}
+export interface InboundIceCandidateMessage extends CommonIceCandidateMessage {}
 export interface InboundClientJoinedMessage {
   type: "client_joined";
   payload: {
@@ -32,4 +34,5 @@ export type InboundMessage =
   | InboundAnswerMessage
   | InboundClientJoinedMessage
   | InboundClientLeftMessage
-  | InboundInitMessage;
+  | InboundInitMessage
+  | InboundIceCandidateMessage;
