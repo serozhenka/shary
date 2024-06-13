@@ -9,6 +9,7 @@ const (
 	OutboudOffer        OutboundMessageType = "offer"
 	OutboudAnswer       OutboundMessageType = "answer"
 	OutboudData         OutboundMessageType = "data"
+	OutboudIceCandidate OutboundMessageType = "iceCandidate"
 )
 
 type OutboundWsMessage struct {
@@ -34,7 +35,7 @@ type OutboundClientLeftPayload struct {
 
 type OutboundOfferPayload struct {
 	MessageId string `json:"messageId"`
-	Value struct {
+	Value     struct {
 		Type string `json:"type"`
 		Sdp  string `json:"sdp"`
 	} `json:"value"`
@@ -43,9 +44,15 @@ type OutboundOfferPayload struct {
 
 type OutboundAnswerPayload struct {
 	MessageId string `json:"messageId"`
-	ClientId string `json:"clientId"`
-	Value    struct {
+	ClientId  string `json:"clientId"`
+	Value     struct {
 		Type string `json:"type"`
 		Sdp  string `json:"sdp"`
 	} `json:"value"`
+}
+
+type OutboundIceCandidatePayload struct {
+	MessageId string                 `json:"messageId"`
+	ClientId  string                 `json:"clientId"`
+	Value     map[string]interface{} `json:"value"`
 }

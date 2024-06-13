@@ -88,8 +88,8 @@ func (c *Client) Reader() {
 					Type: messages.OutboudOffer,
 					Payload: &messages.OutboundOfferPayload{
 						MessageId: payload.MessageId,
-						Value:    payload.Value,
-						ClientId: c.Id,
+						Value:     payload.Value,
+						ClientId:  c.Id,
 					},
 				},
 			)
@@ -100,8 +100,20 @@ func (c *Client) Reader() {
 					Type: messages.OutboudAnswer,
 					Payload: &messages.OutboundAnswerPayload{
 						MessageId: payload.MessageId,
-						Value:    payload.Value,
-						ClientId: c.Id,
+						Value:     payload.Value,
+						ClientId:  c.Id,
+					},
+				},
+			)
+		case *messages.InboundIceCandidatePayload:
+			c.Send(
+				payload.ClientId,
+				&messages.OutboundWsMessage{
+					Type: messages.OutboudIceCandidate,
+					Payload: &messages.OutboundIceCandidatePayload{
+						MessageId: payload.MessageId,
+						Value:     payload.Value,
+						ClientId:  c.Id,
 					},
 				},
 			)
