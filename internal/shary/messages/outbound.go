@@ -10,6 +10,7 @@ const (
 	OutboudAnswer       OutboundMessageType = "answer"
 	OutboudData         OutboundMessageType = "data"
 	OutboudIceCandidate OutboundMessageType = "iceCandidate"
+	OutboundTrackMuted  OutboundMessageType = "trackMuted"
 )
 
 type OutboundWsMessage struct {
@@ -55,4 +56,9 @@ type OutboundIceCandidatePayload struct {
 	MessageId string                 `json:"messageId"`
 	ClientId  string                 `json:"clientId"`
 	Value     map[string]interface{} `json:"value"`
+}
+
+type OutboundTrackMutedPayload struct {
+	ClientId  string `json:"clientId"`
+	TrackKind string `json:"trackKind"`
 }

@@ -3,6 +3,7 @@ import {
   CommonOfferMessage,
   CommonAnswerMessage,
   CommonIceCandidateMessage,
+  CommonTrackMutedMessage,
 } from "./common";
 
 export interface InboundInitMessage {
@@ -28,6 +29,13 @@ export interface InboundClientLeftMessage {
   };
 }
 
+export interface InboundTrackMutedMessage extends CommonTrackMutedMessage {
+  payload: {
+    clientId: string;
+    trackKind: "audio" | "video";
+  };
+}
+
 export type InboundMessage =
   | InboundDataMessage
   | InboundOfferMessage
@@ -35,4 +43,5 @@ export type InboundMessage =
   | InboundClientJoinedMessage
   | InboundClientLeftMessage
   | InboundInitMessage
-  | InboundIceCandidateMessage;
+  | InboundIceCandidateMessage
+  | InboundTrackMutedMessage;

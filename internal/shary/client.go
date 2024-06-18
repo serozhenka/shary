@@ -117,7 +117,18 @@ func (c *Client) Reader() {
 					},
 				},
 			)
+		case *messages.InboundTrackMutedPayload:
+			c.Broadcast(
+				&messages.OutboundWsMessage{
+					Type: messages.OutboundTrackMuted,
+					Payload: &messages.OutboundTrackMutedPayload{
+						ClientId:  c.Id,
+						TrackKind: payload.TrackKind,
+					},
+				},
+			)
 		}
+
 	}
 }
 

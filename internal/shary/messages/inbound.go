@@ -35,6 +35,10 @@ type InboundIceCandidatePayload struct {
 	Value     map[string]interface{} `json:"value"`
 }
 
+type InboundTrackMutedPayload struct {
+	TrackKind string `json:"trackKind"`
+}
+
 type InboundMessageType string
 
 const (
@@ -42,6 +46,7 @@ const (
 	InboundAnswer       InboundMessageType = "answer"
 	InboundData         InboundMessageType = "data"
 	InboundIceCandidate InboundMessageType = "iceCandidate"
+	InboundTrackMuted   InboundMessageType = "trackMuted"
 )
 
 var InboundPayload = map[InboundMessageType]func() interface{}{
@@ -49,4 +54,5 @@ var InboundPayload = map[InboundMessageType]func() interface{}{
 	InboundAnswer:       func() interface{} { return &InboundAnswerPayload{} },
 	InboundData:         func() interface{} { return &InboundDataPayload{} },
 	InboundIceCandidate: func() interface{} { return &InboundIceCandidatePayload{} },
+	InboundTrackMuted:   func() interface{} { return &InboundTrackMutedPayload{} },
 }

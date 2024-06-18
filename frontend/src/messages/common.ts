@@ -29,3 +29,7 @@ export interface CommonIceCandidateMessage {
     clientId: string;
   };
 }
+
+export interface CommonTrackMutedMessage {
+  type: "trackMuted";
+}
