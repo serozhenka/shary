@@ -10,7 +10,7 @@ export interface Peer {
   remoteStream: MediaStream;
   isPolite: boolean;
   makingOffer: boolean;
-  audioMuted?: boolean;
+  audioMuted: boolean;
 }
 
 export const bootstrapPeerConnection = (

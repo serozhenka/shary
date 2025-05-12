@@ -25,6 +25,7 @@ export const initHandler = ({
       remoteStream: new MediaStream(),
       isPolite: true,
       makingOffer: false,
+      audioMuted: false,
     };
     bootstrapPeerConnection(peer, handlePeersChange);
     return peer;

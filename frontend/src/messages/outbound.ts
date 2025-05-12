@@ -1,9 +1,10 @@
 import {
-  CommonDataMessage,
-  CommonOfferMessage,
   CommonAnswerMessage,
+  CommonDataMessage,
   CommonIceCandidateMessage,
+  CommonOfferMessage,
   CommonTrackMutedMessage,
+  CommonTrackUnmutedMessage,
 } from "./common";
 
 export interface OutboundDataMessage extends CommonDataMessage {}
@@ -18,9 +19,16 @@ export interface OutboundTrackMutedMessage extends CommonTrackMutedMessage {
   };
 }
 
+export interface OutboundTrackUnmutedMessage extends CommonTrackUnmutedMessage {
+  payload: {
+    trackKind: "audio" | "video";
+  };
+}
+
 export type OutboundMessage =
   | OutboundDataMessage
   | OutboundOfferMessage
   | OutboundAnswerMessage
   | OutboundIceCandidateMessage
-  | OutboundTrackMutedMessage;
+  | OutboundTrackMutedMessage
+  | OutboundTrackUnmutedMessage;

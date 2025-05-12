@@ -17,6 +17,7 @@ function RoomPage() {
   const [peers, setPeers] = useState<Peer[]>([]);
   const peersRef = useRef(peers);
   const [isVideoEnabled, setVideoEnabled] = useState(true);
+  const [isAudioEnabled, setAudioEnabled] = useState(true);
   const localStreamRef = useRef(new MediaStream());
   const wsRef = useRef<WebSocket | null>(null);
   const { roomId } = useParams<{ roomId: string }>();
@@ -100,6 +101,66 @@ function RoomPage() {
     });
   };
 
+  const handleToggleAudio = () => {
+    setAudioEnabled((prevIsEnabled) => {
+      const isEnabled = !prevIsEnabled;
+      if (!isEnabled) {
+        const [audioTrack] = localStreamRef.current.getAudioTracks();
+        if (!audioTrack) return isEnabled;
+        audioTrack.stop();
+        localStreamRef.current.removeTrack(audioTrack);
+
+        peersRef.current.forEach((peer) => {
+          peer.pc.getSenders().forEach((sender) => {
+            if (!sender.track || sender.track!.kind !== "audio") return;
+            peer.remoteStream.removeTrack(sender.track!);
+            sender.track!.stop();
+            peer.pc.removeTrack(sender);
+          });
+        });
+
+        const mutedMessage: OutboundTrackMutedMessage = {
+          type: "trackMuted",
+          payload: { trackKind: "audio" },
+        };
+
+        if (wsRef.current) {
+          wsRef.current.send(JSON.stringify(mutedMessage));
+        }
+      } else {
+        navigator.mediaDevices
+          .getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+            },
+          })
+          .then((stream) => {
+            const audioTracks = stream.getAudioTracks();
+            console.log("Got new audio tracks:", audioTracks);
+
+            audioTracks.forEach((track) => {
+              localStreamRef.current.addTrack(track);
+            });
+
+            peersRef.current.forEach((peer) => {
+              audioTracks.forEach((track) => {
+                console.log("Adding audio track to peer:", peer.id);
+                peer.pc.addTrack(track, localStreamRef.current);
+              });
+            });
+          })
+          .catch((err) => {
+            console.error("Error getting audio stream:", err);
+            return prevIsEnabled; // Keep previous state on error
+          });
+      }
+
+      return isEnabled;
+    });
+  };
+
   useEffect(() => {
     let ws: WebSocket;
     let isMounted = true;
@@ -162,7 +223,7 @@ function RoomPage() {
           await answerHandler({ message: message, peers: peersRef.current });
         } else if (message.type === "iceCandidate") {
           iceCandidateHandler({ message, peers: peersRef.current });
-        } else if (message.type == "trackMuted") {
+        } else if (message.type === "trackMuted") {
           trackMutedHandler({
             peers: peersRef.current,
             message,
@@ -213,6 +274,11 @@ function RoomPage() {
           <div className="video-container position-relative">
             <div className="position-absolute z-1 bottom-0 start-0 p-2 text-white bg-dark bg-opacity-50 rounded-bottom-3 ps-3 pe-3">
               You
+              <i
+                className={`ms-2 bi ${
+                  isAudioEnabled ? "" : "bi-mic-mute-fill text-danger"
+                }`}
+              ></i>
             </div>
             <Video
               stream={localStreamRef.current}
@@ -246,17 +312,19 @@ function RoomPage() {
             ></i>
           </button>
 
-          {/* Placeholder buttons for future functionality */}
-          <button className="btn btn-outline-light rounded-circle" disabled>
-            <i className="bi bi-mic"></i>
+          <button
+            onClick={handleToggleAudio}
+            className={`btn ${
+              isAudioEnabled ? "btn-outline-light" : "btn-danger"
+            } rounded-circle`}
+          >
+            <i
+              className={`bi ${isAudioEnabled ? "bi-mic" : "bi-mic-mute"}`}
+            ></i>
           </button>
 
           <button className="btn btn-outline-danger rounded-circle" disabled>
             <i className="bi bi-telephone-x"></i>
-          </button>
-
-          <button className="btn btn-outline-light rounded-circle" disabled>
-            <i className="bi bi-emoji-smile"></i>
           </button>
         </div>
       </div>

@@ -25,6 +25,7 @@ export const clientJoinedHandler = async ({
     remoteStream: new MediaStream(),
     isPolite: false,
     makingOffer: false,
+    audioMuted: false,
   };
   bootstrapPeerConnection(peer, handlePeersChange);
 

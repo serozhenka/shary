@@ -13,8 +13,8 @@ export const getOnTrackHandler = (
       return peers.map((p) => {
         if (p.id !== peer.id) return p;
 
-        // Add track to existing stream instead of creating new one
         p.remoteStream.addTrack(track);
+        if (track.kind === "audio") p.audioMuted = false;
 
         console.log(
           "Updated remote stream tracks:",
