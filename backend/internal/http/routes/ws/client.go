@@ -1,4 +1,4 @@
-package shary
+package ws
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/serozhenka/shary/internal/shary/messages"
+	"github.com/serozhenka/shary/internal/messages"
 )
 
 const (
@@ -17,31 +17,30 @@ const (
 
 type Client struct {
 	Id       string
-	Room     *Room
 	Conn     *websocket.Conn
 	Messages chan *messages.OutboundWsMessage
 }
 
-func (c *Client) Broadcast(m *messages.OutboundWsMessage) {
-	for peer := range c.Room.Clients {
+func (c *Client) Broadcast(m *Meeting, msg *messages.OutboundWsMessage) {
+	for peer := range m.Clients {
 		if c != peer {
-			peer.Messages <- m
+			peer.Messages <- msg
 		}
 	}
 }
 
-func (c *Client) Send(receiverId string, m *messages.OutboundWsMessage) {
-	for peer := range c.Room.Clients {
+func (c *Client) Send(m *Meeting, receiverId string, msg *messages.OutboundWsMessage) {
+	for peer := range m.Clients {
 		if peer.Id == receiverId {
-			peer.Messages <- m
+			peer.Messages <- msg
 		}
 	}
 }
 
-func (c *Client) Reader() {
+func (c *Client) Reader(m *Meeting) {
 	defer func() {
 		c.Conn.Close()
-		c.Room.Leave(c)
+		m.Leave(c)
 	}()
 
 	c.Conn.SetReadDeadline(time.Now().Add(pongWait))
@@ -76,6 +75,7 @@ func (c *Client) Reader() {
 		switch payload := payload.(type) {
 		case *messages.InboundDataPayload:
 			c.Broadcast(
+				m,
 				&messages.OutboundWsMessage{
 					Type:    messages.OutboudData,
 					Payload: wsMessage.Payload,
@@ -83,6 +83,7 @@ func (c *Client) Reader() {
 			)
 		case *messages.InboundOfferPayload:
 			c.Send(
+				m,
 				payload.ClientId,
 				&messages.OutboundWsMessage{
 					Type: messages.OutboudOffer,
@@ -95,6 +96,7 @@ func (c *Client) Reader() {
 			)
 		case *messages.InboundAnswerPayload:
 			c.Send(
+				m,
 				payload.ClientId,
 				&messages.OutboundWsMessage{
 					Type: messages.OutboudAnswer,
@@ -107,6 +109,7 @@ func (c *Client) Reader() {
 			)
 		case *messages.InboundIceCandidatePayload:
 			c.Send(
+				m,
 				payload.ClientId,
 				&messages.OutboundWsMessage{
 					Type: messages.OutboudIceCandidate,
@@ -119,6 +122,7 @@ func (c *Client) Reader() {
 			)
 		case *messages.InboundTrackMutedPayload:
 			c.Broadcast(
+				m,
 				&messages.OutboundWsMessage{
 					Type: messages.OutboundTrackMuted,
 					Payload: &messages.OutboundTrackMutedPayload{

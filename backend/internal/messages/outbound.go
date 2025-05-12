@@ -15,7 +15,7 @@ const (
 
 type OutboundWsMessage struct {
 	Type    OutboundMessageType `json:"type"`
-	Payload interface{}         `json:"payload"`
+	Payload any                 `json:"payload"`
 }
 
 type InitClient struct {
@@ -53,9 +53,9 @@ type OutboundAnswerPayload struct {
 }
 
 type OutboundIceCandidatePayload struct {
-	MessageId string                 `json:"messageId"`
-	ClientId  string                 `json:"clientId"`
-	Value     map[string]interface{} `json:"value"`
+	MessageId string         `json:"messageId"`
+	ClientId  string         `json:"clientId"`
+	Value     map[string]any `json:"value"`
 }
 
 type OutboundTrackMutedPayload struct {

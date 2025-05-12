@@ -1,28 +1,31 @@
-package shary
+package ws
 
 import (
-	"github.com/serozhenka/shary/internal/shary/messages"
-	"github.com/serozhenka/shary/internal/shary/utils"
+	"github.com/serozhenka/shary/internal/messages"
+	"github.com/serozhenka/shary/internal/models"
+	"github.com/serozhenka/shary/internal/utils"
 	"golang.org/x/exp/maps"
 )
 
-type Room struct {
+type Meeting struct {
 	Clients map[*Client]bool
+	Room    *models.Room
 }
 
-func NewRoom() *Room {
-	return &Room{
+func NewMeeting() *Meeting {
+	return &Meeting{
 		Clients: map[*Client]bool{},
+		Room:    nil,
 	}
 }
 
-func (r *Room) Join(c *Client) {
-	r.Clients[c] = true
+func (m *Meeting) Join(c *Client) {
+	m.Clients[c] = true
 	c.Messages <- &messages.OutboundWsMessage{
 		Type: messages.OutboudInit,
 		Payload: &messages.OutboundInitPayload{
 			Clients: func() []messages.InitClient {
-				clients := maps.Keys(c.Room.Clients)
+				clients := maps.Keys(m.Clients)
 				filteredClients := utils.Filter(
 					clients,
 					func(roomClient *Client) bool {
@@ -40,6 +43,7 @@ func (r *Room) Join(c *Client) {
 		},
 	}
 	c.Broadcast(
+		m,
 		&messages.OutboundWsMessage{
 			Type: messages.OutboudClientJoined,
 			Payload: &messages.OutboundClientJoinedPayload{
@@ -49,9 +53,10 @@ func (r *Room) Join(c *Client) {
 	)
 }
 
-func (r *Room) Leave(c *Client) {
-	delete(r.Clients, c)
+func (m *Meeting) Leave(c *Client) {
+	delete(m.Clients, c)
 	c.Broadcast(
+		m,
 		&messages.OutboundWsMessage{
 			Type: messages.OutboudClientLeft,
 			Payload: &messages.OutboundClientLeftPayload{
@@ -59,4 +64,8 @@ func (r *Room) Leave(c *Client) {
 			},
 		},
 	)
+}
+
+func (r *Meeting) GetParticipantCount() int {
+	return len(r.Clients)
 }

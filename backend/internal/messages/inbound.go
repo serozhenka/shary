@@ -30,9 +30,9 @@ type InboundAnswerPayload struct {
 }
 
 type InboundIceCandidatePayload struct {
-	MessageId string                 `json:"messageId"`
-	ClientId  string                 `json:"clientId"`
-	Value     map[string]interface{} `json:"value"`
+	MessageId string         `json:"messageId"`
+	ClientId  string         `json:"clientId"`
+	Value     map[string]any `json:"value"`
 }
 
 type InboundTrackMutedPayload struct {
@@ -49,10 +49,10 @@ const (
 	InboundTrackMuted   InboundMessageType = "trackMuted"
 )
 
-var InboundPayload = map[InboundMessageType]func() interface{}{
-	InboundOffer:        func() interface{} { return &InboundOfferPayload{} },
-	InboundAnswer:       func() interface{} { return &InboundAnswerPayload{} },
-	InboundData:         func() interface{} { return &InboundDataPayload{} },
-	InboundIceCandidate: func() interface{} { return &InboundIceCandidatePayload{} },
-	InboundTrackMuted:   func() interface{} { return &InboundTrackMutedPayload{} },
+var InboundPayload = map[InboundMessageType]func() any{
+	InboundOffer:        func() any { return &InboundOfferPayload{} },
+	InboundAnswer:       func() any { return &InboundAnswerPayload{} },
+	InboundData:         func() any { return &InboundDataPayload{} },
+	InboundIceCandidate: func() any { return &InboundIceCandidatePayload{} },
+	InboundTrackMuted:   func() any { return &InboundTrackMutedPayload{} },
 }

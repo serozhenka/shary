@@ -1,3 +1,3 @@
 .PHONY: run
 run:
-	go run cmd/shary/main.go
+	go run cmd/main.go
