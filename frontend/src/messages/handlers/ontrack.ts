@@ -6,12 +6,22 @@ export const getOnTrackHandler = (
 ) => {
   return async ({ track }: RTCTrackEvent) => {
     handlePeersChange((peers) => {
+      console.log("peer", peer);
+      console.log("PEERS", peers);
+      console.log("track", track);
+
       return peers.map((p) => {
         if (p.id !== peer.id) return p;
-        return {
-          ...p,
-          remoteStream: new MediaStream([...p.remoteStream.getTracks(), track]),
-        };
+
+        // Add track to existing stream instead of creating new one
+        p.remoteStream.addTrack(track);
+
+        console.log(
+          "Updated remote stream tracks:",
+          p.remoteStream.getTracks()
+        );
+
+        return p;
       });
     });
   };

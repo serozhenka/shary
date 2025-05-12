@@ -30,6 +30,10 @@ export const clientJoinedHandler = async ({
 
   handlePeersChange((prevPeers) => [...prevPeers, peer]);
 
+  localStream.getTracks().forEach((track) => {
+    peer.pc.addTrack(track, localStream);
+  });
+
   try {
     peer.makingOffer = true;
     const offer = await peer.pc.createOffer();
@@ -49,8 +53,4 @@ export const clientJoinedHandler = async ({
   } finally {
     peer.makingOffer = false;
   }
-
-  localStream.getTracks().forEach((track) => {
-    peer.pc.addTrack(track, localStream);
-  });
 };

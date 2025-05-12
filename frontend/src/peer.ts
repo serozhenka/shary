@@ -10,36 +10,8 @@ export interface Peer {
   remoteStream: MediaStream;
   isPolite: boolean;
   makingOffer: boolean;
+  audioMuted?: boolean;
 }
-
-// export class Peer {
-//   id: string;
-//   pc: RTCPeerConnection;
-//   ws: WebSocket;
-//   remoteStream: MediaStream;
-//   isPolite: boolean;
-//   makingOffer: boolean;
-//   videoRef: MutableRefObject<HTMLVideoElement | null>;
-
-//   constructor({ id, rtcConfig, ws, isPolite, makingOffer }: PeerProps) {
-//     this.id = id;
-//     this.ws = ws;
-//     this.remoteStream = new MediaStream();
-//     this.isPolite = isPolite;
-//     this.makingOffer = makingOffer || false;
-//     this.pc = this.setupPeerConnection(rtcConfig);
-//     this.videoRef = useRef(null);
-//   }
-
-//   setupPeerConnection(config: RTCConfiguration): RTCPeerConnection {
-//     const pc = new RTCPeerConnection(config);
-//     pc.onnegotiationneeded = getOnNegotiationHandler(this);
-//     pc.oniceconnectionstatechange = getOnIceConnectionStateChangeHandler(this);
-//     pc.onicecandidate = getOnIceCandidateHandler(this);
-//     pc.ontrack = getOnTrackHandler(this);
-//     return pc;
-//   }
-// }
 
 export const bootstrapPeerConnection = (
   peer: Peer,

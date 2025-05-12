@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+
 interface VideoProps {
   stream: MediaStream;
   mirrored?: boolean;
@@ -5,21 +7,25 @@ interface VideoProps {
 }
 
 const Video = ({ stream, mirrored, muted }: VideoProps) => {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream]);
+
   return (
     <video
       playsInline={true}
       autoPlay
       muted={muted}
-      width={300}
-      height={300}
-      className={`${mirrored ? "self-video" : ""}\
-        bg-secondary-subtle
-        rounded-2
-        z-0
-        m-2`}
-      ref={(video) => {
-        if (video && stream) video.srcObject = stream;
-      }}
+      className={`${mirrored ? "self-video" : ""} 
+        rounded-3
+        object-fit-cover
+        h-100
+        w-100`}
+      ref={videoRef}
     ></video>
   );
 };
