@@ -19,7 +19,8 @@ type OutboundWsMessage struct {
 }
 
 type InitClient struct {
-	Id string `json:"id"`
+	Id       string `json:"id"`
+	Username string `json:"username"`
 }
 
 type OutboundInitPayload struct {
@@ -28,6 +29,7 @@ type OutboundInitPayload struct {
 
 type OutboundClientJoinedPayload struct {
 	ClientId string `json:"clientId"`
+	Username string `json:"username"`
 }
 
 type OutboundClientLeftPayload struct {

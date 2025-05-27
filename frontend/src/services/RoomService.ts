@@ -77,4 +77,20 @@ export const RoomService = {
       throw error;
     }
   },
+
+  async addUserToRoom(roomId: string, email: string): Promise<boolean> {
+    try {
+      await axios.post(
+        `${API_URL}/rooms/${roomId}/users`,
+        { email },
+        {
+          headers: authService.getAuthHeaders(),
+        }
+      );
+      return true;
+    } catch (error) {
+      console.error("Error adding user to room:", error);
+      return false;
+    }
+  },
 };

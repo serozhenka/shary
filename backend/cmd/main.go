@@ -38,8 +38,7 @@ func main() {
 	r := gin.Default()
 	r.Use(middlewares.CORSMiddleware())
 
-	roomsRepo := rrooms.NewInMemoryRepository()
-	roomsRepo.CreateRoom("General")
+	roomsRepo := rrooms.NewPostgresRepository(database.GetDB())
 	meetingManager := ws.NewInMemoryMeetingManager()
 
 	// Public routes

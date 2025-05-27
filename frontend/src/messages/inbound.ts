@@ -9,7 +9,7 @@ import {
 export interface InboundInitMessage {
   type: "init";
   payload: {
-    clients: Array<{ id: string }>;
+    clients: Array<{ id: string; username: string }>;
   };
 }
 export interface InboundDataMessage extends CommonDataMessage {}
@@ -20,6 +20,7 @@ export interface InboundClientJoinedMessage {
   type: "client_joined";
   payload: {
     clientId: string;
+    username: string;
   };
 }
 export interface InboundClientLeftMessage {

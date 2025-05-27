@@ -15,4 +15,5 @@ func SetupRouter(rg *gin.RouterGroup, ctx *RouterCtx) {
 	rg.POST("", ctx.createRoom)
 	rg.PUT("/:id", ctx.updateRoom)
 	rg.DELETE("/:id", ctx.deleteRoom)
+	rg.POST("/:id/users", ctx.addUserToRoom)
 }

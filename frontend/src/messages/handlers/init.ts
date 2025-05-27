@@ -20,6 +20,7 @@ export const initHandler = ({
   const peers = message.payload.clients.map((client) => {
     const peer: Peer = {
       id: client.id,
+      username: client.username,
       pc: new RTCPeerConnection(rtcConfig),
       ws: ws,
       remoteStream: new MediaStream(),

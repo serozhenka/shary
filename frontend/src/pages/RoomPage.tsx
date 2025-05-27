@@ -11,6 +11,7 @@ import { offerHandler } from "../messages/handlers/offer";
 import { trackMutedHandler } from "../messages/handlers/trackMuted";
 import { InboundMessage } from "../messages/inbound";
 import { OutboundTrackMutedMessage } from "../messages/outbound";
+import { RoomModel } from "../models/RoomModel";
 import { Peer } from "../peer";
 import { authService, User } from "../services/authService";
 import { RoomService } from "../services/RoomService";
@@ -22,6 +23,7 @@ function RoomPage() {
   const [isAudioEnabled, setAudioEnabled] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [roomExists, setRoomExists] = useState<boolean | null>(null);
+  const [roomData, setRoomData] = useState<RoomModel | null>(null);
   const localStreamRef = useRef(new MediaStream());
   const wsRef = useRef<WebSocket | null>(null);
   const { id: roomId } = useParams<{ id: string }>();
@@ -41,7 +43,7 @@ function RoomPage() {
   }, []);
 
   useEffect(() => {
-    // Check if room exists
+    // Check if room exists and fetch room data
     const checkRoomExists = async () => {
       if (!roomId) {
         navigate("/rooms");
@@ -56,9 +58,11 @@ function RoomPage() {
         if (room) {
           console.log("Room exists, setting roomExists to true");
           setRoomExists(true);
+          setRoomData(room);
         } else {
           console.log("Room not found (404), setting roomExists to false");
           setRoomExists(false);
+          setRoomData(null);
           // Redirect to rooms page after a short delay to show error
           setTimeout(() => navigate("/rooms"), 2000);
         }
@@ -67,6 +71,7 @@ function RoomPage() {
         // For non-404 errors, assume room exists and let WebSocket handle it
         // This prevents auth errors from blocking room access
         setRoomExists(true);
+        setRoomData(null);
       }
     };
 
@@ -361,7 +366,9 @@ function RoomPage() {
   return (
     <div className="room-container d-flex flex-column vh-100 bg-dark">
       <div className="room-header d-flex justify-content-between align-items-center p-3">
-        <h4 className="text-white m-0">{roomId || "Meeting Room"}</h4>
+        <h4 className="text-white m-0">
+          {roomData?.name || roomId || "Meeting Room"}
+        </h4>
       </div>
 
       <div className="video-content flex-grow-1 overflow-auto p-3">

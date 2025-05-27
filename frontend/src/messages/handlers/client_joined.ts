@@ -20,6 +20,7 @@ export const clientJoinedHandler = async ({
 }: ClientJoinedHandlerProps) => {
   const peer: Peer = {
     id: message.payload.clientId,
+    username: message.payload.username,
     pc: new RTCPeerConnection(rtcConfig),
     ws: ws,
     remoteStream: new MediaStream(),

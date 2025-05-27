@@ -2,5 +2,7 @@ export interface RoomModel {
   id: string;
   name: string;
   participants?: number;
-  createdAt: Date;
+  created_at: Date;
+  owner_id?: number;
+  is_owner?: boolean;
 }

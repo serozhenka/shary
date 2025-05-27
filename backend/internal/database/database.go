@@ -22,7 +22,7 @@ func Connect(databaseURL string) error {
 }
 
 func Migrate() error {
-	err := DB.AutoMigrate(&models.User{})
+	err := DB.AutoMigrate(&models.User{}, &models.Room{}, &models.Participant{})
 	if err != nil {
 		return err
 	}

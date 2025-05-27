@@ -2,6 +2,7 @@ package ws
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/segmentio/ksuid"
@@ -27,20 +28,28 @@ func (ctx *RouterCtx) ws(c *gin.Context) {
 	roomId := c.Query("roomId")
 	if roomId != "" {
 		// If roomId is specified, validate that it exists
-		_, err := ctx.RoomsRepo.GetRoom(roomId)
+		_, err := ctx.RoomsRepo.GetRoomByStringID(claims.UserID, roomId)
 		if err != nil {
 			c.String(http.StatusNotFound, "Room not found")
 			return
 		}
 	} else {
 		// Default to the first room if not specified
-		rooms := ctx.RoomsRepo.ListRooms()
+		rooms, err := ctx.RoomsRepo.ListRooms(claims.UserID)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Failed to fetch rooms")
+			return
+		}
 		if len(rooms) > 0 {
-			roomId = rooms[0].ID
+			roomId = strconv.FormatUint(uint64(rooms[0].ID), 10)
 		} else {
 			// Create a default room if none exists
-			roomModel := ctx.RoomsRepo.CreateRoom("Default Room")
-			roomId = roomModel.ID
+			roomModel, err := ctx.RoomsRepo.CreateRoom(claims.UserID, "Default Room")
+			if err != nil {
+				c.String(http.StatusInternalServerError, "Failed to create default room")
+				return
+			}
+			roomId = strconv.FormatUint(uint64(roomModel.ID), 10)
 		}
 	}
 

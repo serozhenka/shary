@@ -7,3 +7,7 @@ type CreateRoomRequest struct {
 type UpdateRoomRequest struct {
 	Name string `json:"name" binding:"required"`
 }
+
+type AddUserToRoomRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}

@@ -35,8 +35,11 @@ func (m *Meeting) Join(c *Client) {
 
 				return utils.Map(
 					filteredClients,
-					func(c *Client) messages.InitClient {
-						return messages.InitClient{Id: c.Id}
+					func(client *Client) messages.InitClient {
+						return messages.InitClient{
+							Id:       client.Id,
+							Username: client.Username,
+						}
 					},
 				)
 			}(),
@@ -48,6 +51,7 @@ func (m *Meeting) Join(c *Client) {
 			Type: messages.OutboudClientJoined,
 			Payload: &messages.OutboundClientJoinedPayload{
 				ClientId: c.Id,
+				Username: c.Username,
 			},
 		},
 	)
