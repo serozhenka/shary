@@ -9,9 +9,31 @@ import (
 )
 
 func (ctx *RouterCtx) ws(c *gin.Context) {
-	// Get roomId from query parameters, default to the first room if not specified
+	// Get token from query parameters
+	token := c.Query("token")
+	if token == "" {
+		c.String(http.StatusUnauthorized, "Token required")
+		return
+	}
+
+	// Validate token
+	claims, err := ctx.AuthService.ValidateToken(token)
+	if err != nil {
+		c.String(http.StatusUnauthorized, "Invalid token")
+		return
+	}
+
+	// Get roomId from query parameters
 	roomId := c.Query("roomId")
-	if roomId == "" {
+	if roomId != "" {
+		// If roomId is specified, validate that it exists
+		_, err := ctx.RoomsRepo.GetRoom(roomId)
+		if err != nil {
+			c.String(http.StatusNotFound, "Room not found")
+			return
+		}
+	} else {
+		// Default to the first room if not specified
 		rooms := ctx.RoomsRepo.ListRooms()
 		if len(rooms) > 0 {
 			roomId = rooms[0].ID
@@ -30,13 +52,14 @@ func (ctx *RouterCtx) ws(c *gin.Context) {
 	// Upgrade the connection to WebSocket
 	conn, err := ctx.Upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal error"})
+		c.String(http.StatusInternalServerError, "Failed to upgrade connection")
 		return
 	}
 
 	// Create client and join room
 	client := &Client{
 		Id:       ksuid.New().String(),
+		Username: claims.Username,
 		Conn:     conn,
 		Messages: make(chan *messages.OutboundWsMessage, 1024),
 	}

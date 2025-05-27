@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PeerComponent from "../components/Peer";
 import Video from "../components/Video";
 import { answerHandler } from "../messages/handlers/answer";
@@ -12,19 +12,66 @@ import { trackMutedHandler } from "../messages/handlers/trackMuted";
 import { InboundMessage } from "../messages/inbound";
 import { OutboundTrackMutedMessage } from "../messages/outbound";
 import { Peer } from "../peer";
+import { authService, User } from "../services/authService";
+import { RoomService } from "../services/RoomService";
 
 function RoomPage() {
   const [peers, setPeers] = useState<Peer[]>([]);
   const peersRef = useRef(peers);
   const [isVideoEnabled, setVideoEnabled] = useState(true);
   const [isAudioEnabled, setAudioEnabled] = useState(true);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [roomExists, setRoomExists] = useState<boolean | null>(null);
   const localStreamRef = useRef(new MediaStream());
   const wsRef = useRef<WebSocket | null>(null);
-  const { roomId } = useParams<{ roomId: string }>();
+  const { id: roomId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   const rtcConfig: RTCConfiguration = {
     iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
   };
+
+  useEffect(() => {
+    // Fetch current user info
+    const fetchCurrentUser = async () => {
+      const user = await authService.getCurrentUser();
+      setCurrentUser(user);
+    };
+    fetchCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    // Check if room exists
+    const checkRoomExists = async () => {
+      if (!roomId) {
+        navigate("/rooms");
+        return;
+      }
+
+      try {
+        console.log("Checking if room exists:", roomId);
+        const room = await RoomService.getRoomById(roomId);
+        console.log("Room check result:", room);
+
+        if (room) {
+          console.log("Room exists, setting roomExists to true");
+          setRoomExists(true);
+        } else {
+          console.log("Room not found (404), setting roomExists to false");
+          setRoomExists(false);
+          // Redirect to rooms page after a short delay to show error
+          setTimeout(() => navigate("/rooms"), 2000);
+        }
+      } catch (error) {
+        console.error("Error checking room (non-404):", error);
+        // For non-404 errors, assume room exists and let WebSocket handle it
+        // This prevents auth errors from blocking room access
+        setRoomExists(true);
+      }
+    };
+
+    checkRoomExists();
+  }, [roomId, navigate]);
 
   const handlePeersChange = (func: (prev: Peer[]) => Peer[]): void => {
     setPeers((prevPeers) => {
@@ -162,6 +209,9 @@ function RoomPage() {
   };
 
   useEffect(() => {
+    // Only set up WebSocket if room exists
+    if (roomExists !== true) return;
+
     let ws: WebSocket;
     let isMounted = true;
 
@@ -188,7 +238,10 @@ function RoomPage() {
 
       // Use the same hostname that the user used to access the site
       const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = `${wsProtocol}//${window.location.hostname}:8000/ws`;
+      const token = authService.getToken();
+      const wsUrl = `${wsProtocol}//localhost:8000/ws?token=${encodeURIComponent(
+        token || ""
+      )}&roomId=${encodeURIComponent(roomId || "")}`;
       console.log("Connecting to WebSocket at:", wsUrl);
 
       ws = new WebSocket(wsUrl);
@@ -245,7 +298,49 @@ function RoomPage() {
       });
       setPeers([]);
     };
-  }, []);
+  }, [roomExists, roomId]);
+
+  // Show loading while checking room existence
+  if (roomExists === null) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          fontSize: "18px",
+          backgroundColor: "#1a1a1a",
+          color: "white",
+        }}
+      >
+        Loading room...
+      </div>
+    );
+  }
+
+  // Show error message if room doesn't exist
+  if (roomExists === false) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          fontSize: "18px",
+          backgroundColor: "#1a1a1a",
+          color: "white",
+          textAlign: "center",
+        }}
+      >
+        <h2>Room Not Found</h2>
+        <p>The room you're trying to join doesn't exist.</p>
+        <p>Redirecting to rooms page...</p>
+      </div>
+    );
+  }
 
   // Calculate grid layout classes based on number of participants
   const totalParticipants = peers.length + 1; // Including local user
@@ -273,7 +368,7 @@ function RoomPage() {
         <div className={`video-grid ${gridClass}`}>
           <div className="video-container position-relative">
             <div className="position-absolute z-1 bottom-0 start-0 p-2 text-white bg-dark bg-opacity-50 rounded-bottom-3 ps-3 pe-3">
-              You
+              {currentUser?.username || "You"}
               <i
                 className={`ms-2 bi ${
                   isAudioEnabled ? "" : "bi-mic-mute-fill text-danger"

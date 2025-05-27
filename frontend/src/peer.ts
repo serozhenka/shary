@@ -5,6 +5,7 @@ import { getOnTrackHandler } from "./messages/handlers/ontrack";
 
 export interface Peer {
   id: string;
+  username?: string;
   pc: RTCPeerConnection;
   ws: WebSocket;
   remoteStream: MediaStream;
