@@ -12,6 +12,7 @@ export interface Peer {
   isPolite: boolean;
   makingOffer: boolean;
   audioMuted: boolean;
+  videoMuted: boolean;
 }
 
 export const bootstrapPeerConnection = (

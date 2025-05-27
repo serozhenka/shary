@@ -17,7 +17,13 @@ const PeerComponent = ({ peer }: PeerComponentProps) => {
           }`}
         ></i>
       </div>
-      <Video stream={peer.remoteStream} mirrored={false} muted={false}></Video>
+      <Video
+        stream={peer.remoteStream}
+        mirrored={false}
+        muted={false}
+        username={peer.username || `User ${peer.id.slice(0, 4)}`}
+        showPlaceholder={peer.videoMuted}
+      />
     </div>
   );
 };

@@ -27,6 +27,7 @@ export const clientJoinedHandler = async ({
     isPolite: false,
     makingOffer: false,
     audioMuted: false,
+    videoMuted: false,
   };
   bootstrapPeerConnection(peer, handlePeersChange);
 

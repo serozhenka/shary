@@ -28,10 +28,19 @@ export const trackMutedHandler = ({
     return peers.map((peer) => {
       if (peer.id !== mutedPeer.id) return peer;
 
-      return {
+      const updatedPeer = {
         ...peer,
         remoteStream: new MediaStream(peer.remoteStream.getTracks()),
       };
+
+      // Update muted state based on track kind
+      if (message.payload.trackKind === "audio") {
+        updatedPeer.audioMuted = true;
+      } else if (message.payload.trackKind === "video") {
+        updatedPeer.videoMuted = true;
+      }
+
+      return updatedPeer;
     });
   });
 };

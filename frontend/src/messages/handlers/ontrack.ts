@@ -14,7 +14,13 @@ export const getOnTrackHandler = (
         if (p.id !== peer.id) return p;
 
         p.remoteStream.addTrack(track);
-        if (track.kind === "audio") p.audioMuted = false;
+
+        // Reset muted state when track is received
+        if (track.kind === "audio") {
+          p.audioMuted = false;
+        } else if (track.kind === "video") {
+          p.videoMuted = false;
+        }
 
         console.log(
           "Updated remote stream tracks:",

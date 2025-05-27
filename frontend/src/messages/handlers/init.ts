@@ -27,6 +27,7 @@ export const initHandler = ({
       isPolite: true,
       makingOffer: false,
       audioMuted: false,
+      videoMuted: false,
     };
     bootstrapPeerConnection(peer, handlePeersChange);
     return peer;

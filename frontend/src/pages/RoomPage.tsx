@@ -93,7 +93,7 @@ function RoomPage() {
         const [videoTrack] = localStreamRef.current.getVideoTracks();
         if (!videoTrack) return isEnabled;
 
-        console.log(videoTrack);
+        console.log("Stopping video track:", videoTrack);
         videoTrack.stop();
         localStreamRef.current.removeTrack(videoTrack);
 
@@ -131,8 +131,14 @@ function RoomPage() {
             if (videoTracks.length > 0) {
               // Add all video tracks to local stream
               videoTracks.forEach((track) => {
+                console.log("Adding video track to local stream:", track.id);
                 localStreamRef.current.addTrack(track);
               });
+
+              console.log(
+                "Updated local stream tracks:",
+                localStreamRef.current.getTracks()
+              );
 
               // Add tracks to all peers
               peersRef.current.forEach((peer) => {
@@ -141,6 +147,10 @@ function RoomPage() {
                   peer.pc.addTrack(track, localStreamRef.current);
                 });
               });
+
+              // Force a re-render by updating a state that doesn't affect the logic
+              // This ensures the Video component re-evaluates the stream
+              setVideoEnabled(true);
             }
           })
           .catch((err) => {
@@ -417,6 +427,8 @@ function RoomPage() {
               stream={localStreamRef.current}
               mirrored={true}
               muted={true}
+              username={currentUser?.username || "You"}
+              showPlaceholder={!isVideoEnabled}
             />
           </div>
 
