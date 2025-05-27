@@ -213,6 +213,37 @@ function RoomPage() {
     });
   };
 
+  const handleEndCall = () => {
+    console.log("Ending call and cleaning up resources");
+
+    // Close WebSocket connection
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+
+    // Stop all local media tracks
+    const localStream = localStreamRef.current;
+    localStream.getTracks().forEach((track) => {
+      track.stop();
+      localStream.removeTrack(track);
+    });
+
+    // Close all peer connections
+    peersRef.current.forEach((peer) => {
+      if (peer.pc) {
+        peer.pc.close();
+      }
+    });
+
+    // Clear peers state
+    setPeers([]);
+    peersRef.current = [];
+
+    // Navigate back to rooms page
+    navigate("/rooms");
+  };
+
   useEffect(() => {
     // Only set up WebSocket if room exists
     if (roomExists !== true) return;
@@ -425,7 +456,10 @@ function RoomPage() {
             ></i>
           </button>
 
-          <button className="btn btn-outline-danger rounded-circle" disabled>
+          <button
+            onClick={handleEndCall}
+            className="btn btn-outline-danger rounded-circle"
+          >
             <i className="bi bi-telephone-x"></i>
           </button>
         </div>
