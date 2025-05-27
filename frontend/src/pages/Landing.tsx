@@ -10,19 +10,20 @@ const Landing = () => {
             <div className="col-lg-6">
               <h1 className="hero-title">Shary</h1>
               <p className="hero-tagline">
-                Instant group video chat—no installs, no logins, just share and
-                talk.
+                Миттєвий груповий відеочат — без встановлень, без реєстрації,
+                просто поділіться та спілкуйтеся.
               </p>
               <p className="hero-description">
-                Shary is a lightweight, browser-powered WebRTC tool built for
-                students and teams. Spin up HD group calls in seconds—just
-                create a room, share the link, and you're live. No downloads, no
-                friction: seamless video, crystal-clear audio, and end-to-end
-                encryption keep your conversations private and distraction-free.
+                Shary — це легкий браузерний вебзастосунок створений для малих
+                команд. Запускайте HD групові дзвінки за лічені секунди — просто
+                створіть кімнату, поділіться посиланням, і ви в ефірі. Без
+                завантажень, без перешкод: бездоганне відео, чистий звук та
+                наскрізне шифрування роблять ваші розмови приватними та
+                комфортними.
               </p>
               <div className="cta-buttons">
                 <Link to="/rooms" className="btn btn-primary btn-lg">
-                  Start a Call
+                  Почати дзвінок
                 </Link>
               </div>
             </div>
@@ -32,35 +33,35 @@ const Landing = () => {
                   <div className="video-grid-preview">
                     <div className="video-preview-item">
                       <img
-                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop"
-                        alt="Alex"
+                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=faces"
+                        alt="Олексій"
                         className="video-preview-avatar"
                       />
-                      <div className="video-preview-label">Alex</div>
+                      <div className="video-preview-label">Олексій</div>
                     </div>
                     <div className="video-preview-item">
                       <img
-                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop"
-                        alt="Taylor"
+                        src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=300&fit=crop&crop=face"
+                        alt="Марія"
                         className="video-preview-avatar"
                       />
-                      <div className="video-preview-label">Taylor</div>
+                      <div className="video-preview-label">Марія</div>
                     </div>
                     <div className="video-preview-item">
                       <img
-                        src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop"
-                        alt="Jamie"
+                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face"
+                        alt="Андрій"
                         className="video-preview-avatar"
                       />
-                      <div className="video-preview-label">Jamie</div>
+                      <div className="video-preview-label">Андрій</div>
                     </div>
                     <div className="video-preview-item">
                       <img
-                        src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=300&h=300&fit=crop"
-                        alt="Sam"
+                        src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop&crop=face"
+                        alt="Софія"
                         className="video-preview-avatar"
                       />
-                      <div className="video-preview-label">Sam</div>
+                      <div className="video-preview-label">Софія</div>
                     </div>
                   </div>
                   <div className="call-controls-preview">

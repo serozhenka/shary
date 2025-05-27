@@ -43,7 +43,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           fontSize: "18px",
         }}
       >
-        Loading...
+        Завантаження...
       </div>
     );
   }

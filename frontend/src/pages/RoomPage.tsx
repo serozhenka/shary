@@ -360,7 +360,7 @@ function RoomPage() {
           color: "white",
         }}
       >
-        Loading room...
+        Завантаження кімнати...
       </div>
     );
   }
@@ -381,9 +381,9 @@ function RoomPage() {
           textAlign: "center",
         }}
       >
-        <h2>Room Not Found</h2>
-        <p>The room you're trying to join doesn't exist.</p>
-        <p>Redirecting to rooms page...</p>
+        <h2>Кімнату не знайдено</h2>
+        <p>Кімната, до якої ви намагаєтеся приєднатися, не існує.</p>
+        <p>Перенаправлення на сторінку кімнат...</p>
       </div>
     );
   }
@@ -408,7 +408,7 @@ function RoomPage() {
     <div className="room-container d-flex flex-column vh-100 bg-dark">
       <div className="room-header d-flex justify-content-between align-items-center p-3">
         <h4 className="text-white m-0">
-          {roomData?.name || roomId || "Meeting Room"}
+          {roomData?.name || roomId || "Кімната зустрічі"}
         </h4>
       </div>
 
@@ -416,7 +416,7 @@ function RoomPage() {
         <div className={`video-grid ${gridClass}`}>
           <div className="video-container position-relative">
             <div className="position-absolute z-1 bottom-0 start-0 p-2 text-white bg-dark bg-opacity-50 rounded-bottom-3 ps-3 pe-3">
-              {currentUser?.username || "You"}
+              {currentUser?.username || "Ви"}
               <i
                 className={`ms-2 bi ${
                   isAudioEnabled ? "" : "bi-mic-mute-fill text-danger"
@@ -427,7 +427,7 @@ function RoomPage() {
               stream={localStreamRef.current}
               mirrored={true}
               muted={true}
-              username={currentUser?.username || "You"}
+              username={currentUser?.username || "Ви"}
               showPlaceholder={!isVideoEnabled}
             />
           </div>

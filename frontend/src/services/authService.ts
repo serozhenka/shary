@@ -42,7 +42,7 @@ class AuthService {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || "Login failed");
+      throw new Error(error.error || "Помилка входу");
     }
 
     const data: AuthResponse = await response.json();
@@ -61,7 +61,7 @@ class AuthService {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || "Registration failed");
+      throw new Error(error.error || "Помилка реєстрації");
     }
 
     const data: AuthResponse = await response.json();

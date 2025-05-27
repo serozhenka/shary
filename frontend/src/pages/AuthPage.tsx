@@ -42,7 +42,7 @@ const AuthPage: React.FC = () => {
         });
       } else {
         if (!formData.username) {
-          setError("Username is required");
+          setError("Ім'я користувача обов'язкове");
           setLoading(false);
           return;
         }
@@ -54,7 +54,7 @@ const AuthPage: React.FC = () => {
       }
       navigate("/rooms");
     } catch (err: any) {
-      setError(err.message || "An error occurred");
+      setError(err.message || "Сталася помилка");
     } finally {
       setLoading(false);
     }
@@ -63,12 +63,12 @@ const AuthPage: React.FC = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1 className="auth-title">Authorization</h1>
+        <h1 className="auth-title">Авторизація</h1>
 
         <form onSubmit={handleSubmit} className="auth-form">
           {!isLogin && (
             <div className="form-group">
-              <label htmlFor="username">Username</label>
+              <label htmlFor="username">Ім'я користувача</label>
               <input
                 type="text"
                 id="username"
@@ -82,7 +82,7 @@ const AuthPage: React.FC = () => {
           )}
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Електронна пошта</label>
             <input
               type="email"
               id="email"
@@ -95,7 +95,7 @@ const AuthPage: React.FC = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">Пароль</label>
             <input
               type="password"
               id="password"
@@ -110,7 +110,11 @@ const AuthPage: React.FC = () => {
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="auth-button" disabled={loading}>
-            {loading ? "Loading..." : isLogin ? "Authorize" : "Register"}
+            {loading
+              ? "Завантаження..."
+              : isLogin
+              ? "Увійти"
+              : "Зареєструватися"}
           </button>
         </form>
 
@@ -125,8 +129,8 @@ const AuthPage: React.FC = () => {
             className="switch-button"
           >
             {isLogin
-              ? "Need an account? Register"
-              : "Already have an account? Login"}
+              ? "Потрібен обліковий запис? Зареєструватися"
+              : "Вже маєте обліковий запис? Увійти"}
           </button>
         </div>
       </div>
