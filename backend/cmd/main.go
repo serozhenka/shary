@@ -15,6 +15,7 @@ import (
 	"github.com/serozhenka/shary/internal/http/routes/rooms"
 	"github.com/serozhenka/shary/internal/http/routes/ws"
 	rrooms "github.com/serozhenka/shary/internal/repository/rooms"
+	rusers "github.com/serozhenka/shary/internal/repository/users"
 	"github.com/serozhenka/shary/internal/services"
 )
 
@@ -32,13 +33,16 @@ func main() {
 		log.Fatal("Failed to run migrations:", err)
 	}
 
+	// Initialize repositories
+	usersRepo := rusers.NewPostgresRepository(database.GetDB())
+	roomsRepo := rrooms.NewPostgresRepository(database.GetDB())
+
 	// Initialize services
-	authService := services.NewAuthService(cfg.JWTSecret)
+	authService := services.NewAuthService(cfg.JWTSecret, usersRepo)
 
 	r := gin.Default()
 	r.Use(middlewares.CORSMiddleware())
 
-	roomsRepo := rrooms.NewPostgresRepository(database.GetDB())
 	meetingManager := ws.NewInMemoryMeetingManager()
 
 	// Public routes

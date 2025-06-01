@@ -5,14 +5,14 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/serozhenka/shary/internal/database"
 	"github.com/serozhenka/shary/internal/models"
+	"github.com/serozhenka/shary/internal/repository/users"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 type AuthService struct {
 	jwtSecret string
+	userRepo  users.Repository
 }
 
 type Claims struct {
@@ -38,9 +38,10 @@ type AuthResponse struct {
 	User  models.User `json:"user"`
 }
 
-func NewAuthService(jwtSecret string) *AuthService {
+func NewAuthService(jwtSecret string, userRepo users.Repository) *AuthService {
 	return &AuthService{
 		jwtSecret: jwtSecret,
+		userRepo:  userRepo,
 	}
 }
 
@@ -51,8 +52,11 @@ func (s *AuthService) Register(req RegisterRequest) (*AuthResponse, error) {
 	}
 
 	// Check if user already exists
-	var existingUser models.User
-	if err := database.GetDB().Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
+	exists, err := s.userRepo.UserExistsByEmail(req.Email)
+	if err != nil {
+		return nil, errors.New("failed to check user existence")
+	}
+	if exists {
 		return nil, errors.New("user with this email already exists")
 	}
 
@@ -70,43 +74,41 @@ func (s *AuthService) Register(req RegisterRequest) (*AuthResponse, error) {
 		CreatedAt:    time.Now(),
 	}
 
-	if err := database.GetDB().Create(&user).Error; err != nil {
+	createdUser, err := s.userRepo.CreateUser(user)
+	if err != nil {
 		return nil, errors.New("failed to create user")
 	}
 
 	// Generate token
-	token, err := s.GenerateToken(user)
+	token, err := s.GenerateToken(*createdUser)
 	if err != nil {
 		return nil, errors.New("failed to generate token")
 	}
 
 	return &AuthResponse{
 		Token: token,
-		User:  user,
+		User:  *createdUser,
 	}, nil
 }
 
 func (s *AuthService) Login(req LoginRequest) (*AuthResponse, error) {
-	var user models.User
-	if err := database.GetDB().Where("email = ?", req.Email).First(&user).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("invalid email or password")
-		}
-		return nil, errors.New("database error")
+	user, err := s.userRepo.GetUserByEmail(req.Email)
+	if err != nil {
+		return nil, errors.New("invalid email or password")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
 		return nil, errors.New("invalid email or password")
 	}
 
-	token, err := s.GenerateToken(user)
+	token, err := s.GenerateToken(*user)
 	if err != nil {
 		return nil, errors.New("failed to generate token")
 	}
 
 	return &AuthResponse{
 		Token: token,
-		User:  user,
+		User:  *user,
 	}, nil
 }
 
