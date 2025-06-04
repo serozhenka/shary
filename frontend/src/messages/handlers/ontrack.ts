@@ -1,33 +1,86 @@
 import { Peer } from "../../peer";
 
+const peerStreamTypes = new Map<string, Map<string, "media" | "screen">>();
+
+export const registerStreamType = (
+  peerId: string,
+  streamId: string,
+  streamType: "media" | "screen"
+) => {
+  if (!peerStreamTypes.has(peerId)) {
+    peerStreamTypes.set(peerId, new Map());
+  }
+  peerStreamTypes.get(peerId)!.set(streamId, streamType);
+};
+
 export const getOnTrackHandler = (
   peer: Peer,
   handlePeersChange: (func: (peers: Peer[]) => Peer[]) => void
 ) => {
-  return async ({ track }: RTCTrackEvent) => {
+  return async ({ track, streams }: RTCTrackEvent) => {
     handlePeersChange((peers) => {
-      console.log("peer", peer);
-      console.log("PEERS", peers);
-      console.log("track", track);
-
       return peers.map((p) => {
         if (p.id !== peer.id) return p;
 
-        p.remoteStream.addTrack(track);
-
-        // Reset muted state when track is received
-        if (track.kind === "audio") {
-          p.audioMuted = false;
-        } else if (track.kind === "video") {
-          p.videoMuted = false;
+        const incomingStream = streams[0];
+        if (!incomingStream) {
+          console.warn("No stream found for incoming track");
+          return p;
         }
 
-        console.log(
-          "Updated remote stream tracks:",
-          p.remoteStream.getTracks()
-        );
+        const peerStreams = peerStreamTypes.get(peer.id);
+        const streamType = peerStreams?.get(incomingStream.id);
 
-        return p;
+        if (!streamType) {
+          console.warn(
+            `No stream type registered for stream ${incomingStream.id}, peer ${peer.id}. Skipping track until metadata arrives.`
+          );
+          return p;
+        }
+
+        const updatedPeer = { ...p };
+
+        if (streamType === "screen") {
+          if (track.kind === "video") {
+            const screenVideoTracks =
+              updatedPeer.remoteScreenStream.getVideoTracks();
+            screenVideoTracks.forEach((existingTrack) => {
+              existingTrack.stop();
+              updatedPeer.remoteScreenStream.removeTrack(existingTrack);
+            });
+          } else if (track.kind === "audio") {
+            const screenAudioTracks =
+              updatedPeer.remoteScreenStream.getAudioTracks();
+            screenAudioTracks.forEach((existingTrack) => {
+              existingTrack.stop();
+              updatedPeer.remoteScreenStream.removeTrack(existingTrack);
+            });
+          }
+
+          updatedPeer.remoteScreenStream.addTrack(track);
+          updatedPeer.isScreenSharing = true;
+        } else {
+          if (track.kind === "video") {
+            const cameraVideoTracks = updatedPeer.remoteStream.getVideoTracks();
+            cameraVideoTracks.forEach((existingTrack) => {
+              existingTrack.stop();
+              updatedPeer.remoteStream.removeTrack(existingTrack);
+            });
+            updatedPeer.videoMuted = false;
+          } else if (track.kind === "audio") {
+            const existingAudioTracks =
+              updatedPeer.remoteStream.getAudioTracks();
+            existingAudioTracks.forEach((existingTrack) => {
+              existingTrack.stop();
+              updatedPeer.remoteStream.removeTrack(existingTrack);
+            });
+            updatedPeer.audioMuted = false;
+          }
+
+          updatedPeer.remoteStream.addTrack(track);
+        }
+
+        return updatedPeer;
       });
     });
   };

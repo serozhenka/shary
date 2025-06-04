@@ -33,3 +33,7 @@ export interface CommonIceCandidateMessage {
 export interface CommonTrackMutedMessage {
   type: "trackMuted";
 }
+
+export interface CommonTrackUnmutedMessage {
+  type: "trackUnmuted";
+}

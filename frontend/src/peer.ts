@@ -8,11 +8,13 @@ export interface Peer {
   username?: string;
   pc: RTCPeerConnection;
   ws: WebSocket;
-  remoteStream: MediaStream;
+  remoteStream: MediaStream; // Regular user media (camera + mic)
+  remoteScreenStream: MediaStream; // Screen sharing stream
   isPolite: boolean;
   makingOffer: boolean;
   audioMuted: boolean;
   videoMuted: boolean;
+  isScreenSharing: boolean;
 }
 
 export const bootstrapPeerConnection = (

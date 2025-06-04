@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 interface VideoProps {
   stream: MediaStream;
@@ -16,81 +16,17 @@ const Video = ({
   showPlaceholder,
 }: VideoProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [hasVideoTrack, setHasVideoTrack] = useState(false);
 
   useEffect(() => {
-    const checkVideoTracks = () => {
-      if (stream) {
-        const videoTracks = stream.getVideoTracks();
-        // Check if we have video tracks that are enabled and not ended
-        const hasVideo =
-          videoTracks.length > 0 &&
-          videoTracks.some(
-            (track) => track.enabled && track.readyState !== "ended"
-          );
-        console.log("Video tracks check:", {
-          tracksCount: videoTracks.length,
-          hasVideo,
-          tracks: videoTracks.map((t) => ({
-            enabled: t.enabled,
-            readyState: t.readyState,
-            muted: t.muted,
-            id: t.id,
-          })),
-        });
-        setHasVideoTrack(hasVideo);
-        return hasVideo;
-      }
-      setHasVideoTrack(false);
-      return false;
-    };
-
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
-
-      // Initial check
-      checkVideoTracks();
-
-      // Periodic check to catch any missed state changes
-      const intervalId = setInterval(checkVideoTracks, 1000);
-
-      // Listen for track changes
-      const handleTrackChange = () => {
-        console.log("Track change detected");
-        setTimeout(checkVideoTracks, 100); // Small delay to ensure track state is updated
-      };
-
-      // Listen for track state changes
-      const handleTrackStateChange = () => {
-        console.log("Track state change detected");
-        checkVideoTracks();
-      };
-
-      stream.addEventListener("addtrack", handleTrackChange);
-      stream.addEventListener("removetrack", handleTrackChange);
-
-      // Listen to individual track changes
-      stream.getVideoTracks().forEach((track) => {
-        track.addEventListener("ended", handleTrackStateChange);
-        track.addEventListener("mute", handleTrackStateChange);
-        track.addEventListener("unmute", handleTrackStateChange);
-      });
-
-      return () => {
-        clearInterval(intervalId);
-        stream.removeEventListener("addtrack", handleTrackChange);
-        stream.removeEventListener("removetrack", handleTrackChange);
-
-        stream.getVideoTracks().forEach((track) => {
-          track.removeEventListener("ended", handleTrackStateChange);
-          track.removeEventListener("mute", handleTrackStateChange);
-          track.removeEventListener("unmute", handleTrackStateChange);
-        });
-      };
-    } else {
-      console.log("No stream or video ref");
-      setHasVideoTrack(false);
     }
+
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+    };
   }, [stream]);
 
   // Generate user initials
@@ -127,17 +63,6 @@ const Video = ({
     return colors[Math.abs(hash) % colors.length];
   };
 
-  // Show placeholder if explicitly requested OR if no video tracks available
-  const shouldShowPlaceholder = showPlaceholder || !hasVideoTrack;
-
-  console.log("Video component render:", {
-    shouldShowPlaceholder,
-    showPlaceholder,
-    hasVideoTrack,
-    username,
-    streamId: stream?.id,
-  });
-
   return (
     <div className="position-relative w-100 h-100 rounded-3 overflow-hidden bg-dark">
       {/* Video element */}
@@ -149,12 +74,12 @@ const Video = ({
           object-fit-cover
           h-100
           w-100
-          ${shouldShowPlaceholder ? "d-none" : "d-block"}`}
+          ${showPlaceholder ? "d-none" : "d-block"}`}
         ref={videoRef}
       />
 
       {/* Beautiful placeholder */}
-      {shouldShowPlaceholder && (
+      {showPlaceholder && (
         <div
           className="d-flex align-items-center justify-content-center h-100 w-100 position-absolute top-0 start-0"
           style={{

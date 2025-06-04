@@ -39,20 +39,35 @@ type InboundTrackMutedPayload struct {
 	TrackKind string `json:"trackKind"`
 }
 
+type InboundStreamMetadataPayload struct {
+	StreamId   string `json:"streamId"`
+	StreamType string `json:"streamType"` // "media" | "screen"
+}
+
+type InboundScreenShareStartedPayload struct{}
+
+type InboundScreenShareStoppedPayload struct{}
+
 type InboundMessageType string
 
 const (
-	InboundOffer        InboundMessageType = "offer"
-	InboundAnswer       InboundMessageType = "answer"
-	InboundData         InboundMessageType = "data"
-	InboundIceCandidate InboundMessageType = "iceCandidate"
-	InboundTrackMuted   InboundMessageType = "trackMuted"
+	InboundOffer              InboundMessageType = "offer"
+	InboundAnswer             InboundMessageType = "answer"
+	InboundData               InboundMessageType = "data"
+	InboundIceCandidate       InboundMessageType = "iceCandidate"
+	InboundTrackMuted         InboundMessageType = "trackMuted"
+	InboundStreamMetadata     InboundMessageType = "streamMetadata"
+	InboundScreenShareStarted InboundMessageType = "screenShareStarted"
+	InboundScreenShareStopped InboundMessageType = "screenShareStopped"
 )
 
 var InboundPayload = map[InboundMessageType]func() any{
-	InboundOffer:        func() any { return &InboundOfferPayload{} },
-	InboundAnswer:       func() any { return &InboundAnswerPayload{} },
-	InboundData:         func() any { return &InboundDataPayload{} },
-	InboundIceCandidate: func() any { return &InboundIceCandidatePayload{} },
-	InboundTrackMuted:   func() any { return &InboundTrackMutedPayload{} },
+	InboundOffer:              func() any { return &InboundOfferPayload{} },
+	InboundAnswer:             func() any { return &InboundAnswerPayload{} },
+	InboundData:               func() any { return &InboundDataPayload{} },
+	InboundIceCandidate:       func() any { return &InboundIceCandidatePayload{} },
+	InboundTrackMuted:         func() any { return &InboundTrackMutedPayload{} },
+	InboundStreamMetadata:     func() any { return &InboundStreamMetadataPayload{} },
+	InboundScreenShareStarted: func() any { return &InboundScreenShareStartedPayload{} },
+	InboundScreenShareStopped: func() any { return &InboundScreenShareStoppedPayload{} },
 }

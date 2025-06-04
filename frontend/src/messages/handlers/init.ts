@@ -1,4 +1,5 @@
 import { Peer, bootstrapPeerConnection } from "../../peer";
+import { sendStreamMetadata } from "../../utils/streamMetadata";
 import { InboundInitMessage } from "../inbound";
 
 interface InitHandlerProps {
@@ -24,10 +25,12 @@ export const initHandler = ({
       pc: new RTCPeerConnection(rtcConfig),
       ws: ws,
       remoteStream: new MediaStream(),
+      remoteScreenStream: new MediaStream(),
       isPolite: true,
       makingOffer: false,
       audioMuted: false,
       videoMuted: false,
+      isScreenSharing: false,
     };
     bootstrapPeerConnection(peer, handlePeersChange);
     return peer;
@@ -35,11 +38,15 @@ export const initHandler = ({
 
   handlePeersChange((prevPeers) => {
     const newPeers = [...prevPeers, ...peers];
+
     localStream.getTracks().forEach((track) => {
       peers.forEach((peer) => {
         peer.pc.addTrack(track, localStream);
       });
     });
+
+    sendStreamMetadata(ws, localStream.id, "media");
+
     return newPeers;
   });
 };

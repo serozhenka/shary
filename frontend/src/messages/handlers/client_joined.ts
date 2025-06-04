@@ -1,5 +1,6 @@
 import { Xid } from "xid-ts";
 import { Peer, bootstrapPeerConnection } from "../../peer";
+import { sendStreamMetadata } from "../../utils/streamMetadata";
 import { InboundClientJoinedMessage } from "../inbound";
 import { OutboundOfferMessage } from "../outbound";
 
@@ -9,6 +10,8 @@ interface ClientJoinedHandlerProps {
   ws: WebSocket;
   handlePeersChange: (func: (prev: Peer[]) => Peer[]) => void;
   localStream: MediaStream;
+  screenStream?: MediaStream | null;
+  isScreenSharing?: boolean;
 }
 
 export const clientJoinedHandler = async ({
@@ -17,6 +20,8 @@ export const clientJoinedHandler = async ({
   ws,
   handlePeersChange,
   localStream,
+  screenStream,
+  isScreenSharing,
 }: ClientJoinedHandlerProps) => {
   const peer: Peer = {
     id: message.payload.clientId,
@@ -24,10 +29,12 @@ export const clientJoinedHandler = async ({
     pc: new RTCPeerConnection(rtcConfig),
     ws: ws,
     remoteStream: new MediaStream(),
+    remoteScreenStream: new MediaStream(),
     isPolite: false,
     makingOffer: false,
     audioMuted: false,
     videoMuted: false,
+    isScreenSharing: false,
   };
   bootstrapPeerConnection(peer, handlePeersChange);
 
@@ -37,11 +44,21 @@ export const clientJoinedHandler = async ({
     peer.pc.addTrack(track, localStream);
   });
 
+  sendStreamMetadata(ws, localStream.id, "media");
+
+  if (isScreenSharing && screenStream) {
+    screenStream.getTracks().forEach((track) => {
+      peer.pc.addTrack(track, screenStream);
+    });
+
+    sendStreamMetadata(ws, screenStream.id, "screen");
+  }
+
   try {
     peer.makingOffer = true;
     const offer = await peer.pc.createOffer();
     await peer.pc.setLocalDescription(new RTCSessionDescription(offer));
-    let offerMessage: OutboundOfferMessage = {
+    const offerMessage: OutboundOfferMessage = {
       type: "offer",
       payload: {
         messageId: new Xid().toString(),

@@ -12,10 +12,7 @@ export interface InboundInitMessage {
     clients: Array<{ id: string; username: string }>;
   };
 }
-export interface InboundDataMessage extends CommonDataMessage {}
-export interface InboundOfferMessage extends CommonOfferMessage {}
-export interface InboundAnswerMessage extends CommonAnswerMessage {}
-export interface InboundIceCandidateMessage extends CommonIceCandidateMessage {}
+
 export interface InboundClientJoinedMessage {
   type: "client_joined";
   payload: {
@@ -23,6 +20,7 @@ export interface InboundClientJoinedMessage {
     username: string;
   };
 }
+
 export interface InboundClientLeftMessage {
   type: "client_left";
   payload: {
@@ -30,19 +28,44 @@ export interface InboundClientLeftMessage {
   };
 }
 
-export interface InboundTrackMutedMessage extends CommonTrackMutedMessage {
+export interface InboundScreenShareStartedMessage {
+  type: "screenShareStarted";
   payload: {
     clientId: string;
-    trackKind: "audio" | "video";
   };
 }
 
+export interface InboundScreenShareStoppedMessage {
+  type: "screenShareStopped";
+  payload: {
+    clientId: string;
+  };
+}
+
+export interface InboundStreamMetadataMessage {
+  type: "streamMetadata";
+  payload: {
+    clientId: string;
+    streamId: string;
+    streamType: "media" | "screen";
+  };
+}
+
+export type InboundOfferMessage = CommonOfferMessage;
+export type InboundAnswerMessage = CommonAnswerMessage;
+export type InboundDataMessage = CommonDataMessage;
+export type InboundIceCandidateMessage = CommonIceCandidateMessage;
+export type InboundTrackMutedMessage = CommonTrackMutedMessage;
+
 export type InboundMessage =
-  | InboundDataMessage
-  | InboundOfferMessage
-  | InboundAnswerMessage
+  | InboundInitMessage
   | InboundClientJoinedMessage
   | InboundClientLeftMessage
-  | InboundInitMessage
+  | InboundOfferMessage
+  | InboundAnswerMessage
+  | InboundDataMessage
   | InboundIceCandidateMessage
-  | InboundTrackMutedMessage;
+  | InboundTrackMutedMessage
+  | InboundStreamMetadataMessage
+  | InboundScreenShareStartedMessage
+  | InboundScreenShareStoppedMessage;

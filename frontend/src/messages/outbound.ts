@@ -25,10 +25,31 @@ export interface OutboundTrackUnmutedMessage extends CommonTrackUnmutedMessage {
   };
 }
 
+export interface OutboundScreenShareStartedMessage {
+  type: "screenShareStarted";
+  payload: Record<string, never>;
+}
+
+export interface OutboundScreenShareStoppedMessage {
+  type: "screenShareStopped";
+  payload: Record<string, never>;
+}
+
+export interface OutboundStreamMetadataMessage {
+  type: "streamMetadata";
+  payload: {
+    streamId: string;
+    streamType: "media" | "screen";
+  };
+}
+
 export type OutboundMessage =
   | OutboundDataMessage
   | OutboundOfferMessage
   | OutboundAnswerMessage
   | OutboundIceCandidateMessage
   | OutboundTrackMutedMessage
-  | OutboundTrackUnmutedMessage;
+  | OutboundTrackUnmutedMessage
+  | OutboundStreamMetadataMessage
+  | OutboundScreenShareStartedMessage
+  | OutboundScreenShareStoppedMessage;

@@ -21,6 +21,64 @@
   position: relative;
 }
 
+/* Screen sharing layout */
+.screen-share-layout {
+  display: flex;
+  gap: 15px;
+  height: 100%;
+  width: 100%;
+}
+
+.screen-share-main {
+  flex: 1;
+  max-width: calc(100% - 280px);
+  height: 100%;
+}
+
+.screen-share-sidebar {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+.video-sidebar {
+  padding: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #666 #333;
+}
+
+.video-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.video-sidebar::-webkit-scrollbar-track {
+  background: #333;
+  border-radius: 4px;
+}
+
+.video-sidebar::-webkit-scrollbar-thumb {
+  background: #666;
+  border-radius: 4px;
+}
+
+.video-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+.video-sidebar-item {
+  aspect-ratio: 16/9;
+  min-height: 120px;
+  max-height: 150px;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: #3c4043;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.screen-share-container {
+  background-color: #000;
+}
+
 /* Grid layouts based on number of participants */
 .grid-1 {
   grid-template-columns: 1fr;
@@ -103,6 +161,26 @@
   font-size: 20px;
 }
 
+/* Disabled button styles */
+.room-footer .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.room-footer .btn:disabled:hover {
+  transform: none;
+}
+
+/* Video sidebar screen share indicator */
+.video-sidebar-item .bg-primary {
+  font-size: 0.7rem;
+}
+
+/* Screen share container improvements */
+.screen-share-container video {
+  background-color: #000;
+}
+
 /* For smaller screens, adjust the grid to fewer columns */
 @media (max-width: 768px) {
   .grid-1 {
@@ -118,6 +196,36 @@
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(8, 1fr);
   }
+
+  /* Mobile screen sharing layout */
+  .screen-share-layout {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .screen-share-main {
+    max-width: 100%;
+    height: 60%;
+  }
+
+  .screen-share-sidebar {
+    width: 100%;
+    height: 40%;
+  }
+
+  .video-sidebar {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 5px;
+  }
+
+  .video-sidebar-item {
+    min-width: 120px;
+    flex-shrink: 0;
+    aspect-ratio: 9/16;
+    max-height: 180px;
+  }
 }
 
 @media (max-width: 576px) {
@@ -132,5 +240,14 @@
   .room-footer .btn {
     width: 40px;
     height: 40px;
+  }
+
+  .screen-share-layout {
+    gap: 5px;
+  }
+
+  .video-sidebar-item {
+    min-width: 100px;
+    max-height: 160px;
   }
 }

@@ -3,14 +3,17 @@ package messages
 type OutboundMessageType string
 
 const (
-	OutboudInit         OutboundMessageType = "init"
-	OutboudClientJoined OutboundMessageType = "client_joined"
-	OutboudClientLeft   OutboundMessageType = "client_left"
-	OutboudOffer        OutboundMessageType = "offer"
-	OutboudAnswer       OutboundMessageType = "answer"
-	OutboudData         OutboundMessageType = "data"
-	OutboudIceCandidate OutboundMessageType = "iceCandidate"
-	OutboundTrackMuted  OutboundMessageType = "trackMuted"
+	OutboudInit                OutboundMessageType = "init"
+	OutboudClientJoined        OutboundMessageType = "client_joined"
+	OutboudClientLeft          OutboundMessageType = "client_left"
+	OutboudOffer               OutboundMessageType = "offer"
+	OutboudAnswer              OutboundMessageType = "answer"
+	OutboudData                OutboundMessageType = "data"
+	OutboudIceCandidate        OutboundMessageType = "iceCandidate"
+	OutboundTrackMuted         OutboundMessageType = "trackMuted"
+	OutboundStreamMetadata     OutboundMessageType = "streamMetadata"
+	OutboundScreenShareStarted OutboundMessageType = "screenShareStarted"
+	OutboundScreenShareStopped OutboundMessageType = "screenShareStopped"
 )
 
 type OutboundWsMessage struct {
@@ -63,4 +66,18 @@ type OutboundIceCandidatePayload struct {
 type OutboundTrackMutedPayload struct {
 	ClientId  string `json:"clientId"`
 	TrackKind string `json:"trackKind"`
+}
+
+type OutboundStreamMetadataPayload struct {
+	ClientId   string `json:"clientId"`
+	StreamId   string `json:"streamId"`
+	StreamType string `json:"streamType"` // "media" | "screen"
+}
+
+type OutboundScreenShareStartedPayload struct {
+	ClientId string `json:"clientId"`
+}
+
+type OutboundScreenShareStoppedPayload struct {
+	ClientId string `json:"clientId"`
 }

@@ -132,6 +132,38 @@ func (c *Client) Reader(m *Meeting) {
 					},
 				},
 			)
+		case *messages.InboundStreamMetadataPayload:
+			c.Broadcast(
+				m,
+				&messages.OutboundWsMessage{
+					Type: messages.OutboundStreamMetadata,
+					Payload: &messages.OutboundStreamMetadataPayload{
+						ClientId:   c.Id,
+						StreamId:   payload.StreamId,
+						StreamType: payload.StreamType,
+					},
+				},
+			)
+		case *messages.InboundScreenShareStartedPayload:
+			c.Broadcast(
+				m,
+				&messages.OutboundWsMessage{
+					Type: messages.OutboundScreenShareStarted,
+					Payload: &messages.OutboundScreenShareStartedPayload{
+						ClientId: c.Id,
+					},
+				},
+			)
+		case *messages.InboundScreenShareStoppedPayload:
+			c.Broadcast(
+				m,
+				&messages.OutboundWsMessage{
+					Type: messages.OutboundScreenShareStopped,
+					Payload: &messages.OutboundScreenShareStoppedPayload{
+						ClientId: c.Id,
+					},
+				},
+			)
 		}
 
 	}
