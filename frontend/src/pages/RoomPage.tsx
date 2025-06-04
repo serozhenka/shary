@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import Chat from "../components/Chat";
 import PeerComponent from "../components/Peer";
 import ScreenShare from "../components/ScreenShare";
 import Video from "../components/Video";
@@ -21,7 +22,7 @@ import {
   OutboundTrackMutedMessage,
 } from "../messages/outbound";
 import { RoomModel } from "../models/RoomModel";
-import { Peer } from "../peer";
+import { ChatMessage, Peer } from "../peer";
 import { authService, User } from "../services/authService";
 import { RoomService } from "../services/RoomService";
 import { sendStreamMetadata } from "../utils/streamMetadata";
@@ -38,6 +39,16 @@ function RoomPage() {
   const [roomExists, setRoomExists] = useState<boolean | null>(null);
   const [roomData, setRoomData] = useState<RoomModel | null>(null);
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
+
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const isChatOpenRef = useRef(isChatOpen);
+  // Keep the ref in sync with the state.
+  useEffect(() => {
+    isChatOpenRef.current = isChatOpen;
+  }, [isChatOpen]);
+
   const localStreamRef = useRef(new MediaStream());
   const screenStreamRef = useRef(new MediaStream());
   const wsRef = useRef<WebSocket | null>(null);
@@ -80,7 +91,6 @@ function RoomPage() {
         }
       } catch (error) {
         console.error("Error checking room (non-404):", error);
-        // Non-404 errors shouldn't block room access
         setRoomExists(true);
         setRoomData(null);
       }
@@ -98,6 +108,71 @@ function RoomPage() {
       const newPeers = func(prevPeers);
       peersRef.current = newPeers;
       return newPeers;
+    });
+  };
+
+  // Chat message handler
+  const handleChatMessage = useCallback((message: ChatMessage) => {
+    setChatMessages((prev) => [...prev, message]);
+    if (!isChatOpenRef.current) {
+      setUnreadMessageCount((prev) => prev + 1);
+    }
+  }, []);
+
+  // Send chat message to all peers
+  const sendChatMessage = (text: string) => {
+    if (!currentUser) return;
+
+    const message: ChatMessage = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      text,
+      username: currentUser.username,
+      timestamp: Date.now(),
+      isOwn: true,
+    };
+
+    console.log("Sending chat message:", message);
+    console.log("Current peers:", peersRef.current.length);
+
+    setChatMessages((prev) => [...prev, message]);
+
+    peersRef.current.forEach((peer) => {
+      if (peer.dataChannel) {
+        const send = () => {
+          try {
+            peer.dataChannel!.send(JSON.stringify(message));
+          } catch (error) {
+            console.error(
+              "Error sending chat message to peer:",
+              peer.id,
+              error
+            );
+          }
+        };
+
+        if (peer.dataChannel.readyState === "open") {
+          send();
+        } else {
+          console.warn(
+            `Data channel to peer ${peer.id} not open (state: ${peer.dataChannel.readyState}). Will send once open.`
+          );
+          const handleOpen = () => {
+            send();
+            peer.dataChannel!.removeEventListener("open", handleOpen);
+          };
+          peer.dataChannel.addEventListener("open", handleOpen);
+        }
+      }
+    });
+  };
+
+  const toggleChat = () => {
+    setIsChatOpen((prev) => {
+      const newIsOpen = !prev;
+      if (newIsOpen) {
+        setUnreadMessageCount(0);
+      }
+      return newIsOpen;
     });
   };
 
@@ -482,6 +557,7 @@ function RoomPage() {
             rtcConfig,
             handlePeersChange,
             localStream: localStreamRef.current,
+            onChatMessage: handleChatMessage,
           });
         } else if (message.type === "client_joined") {
           await clientJoinedHandler({
@@ -492,6 +568,7 @@ function RoomPage() {
             localStream: localStreamRef.current,
             screenStream: screenStreamRef.current,
             isScreenSharing: isScreenSharingRef.current,
+            onChatMessage: handleChatMessage,
           });
 
           // If we (the local user) are currently sharing the screen, inform the newly joined peer.
@@ -666,7 +743,11 @@ function RoomPage() {
         </h4>
       </div>
 
-      <div className="video-content flex-grow-1 overflow-auto p-3">
+      <div
+        className={`video-content flex-grow-1 overflow-auto p-3 ${
+          isChatOpen ? "chat-open" : ""
+        }`}
+      >
         {isAnyoneScreenSharing ? (
           // Screen sharing layout
           <div className="screen-share-layout">
@@ -777,6 +858,19 @@ function RoomPage() {
           </button>
 
           <button
+            onClick={toggleChat}
+            className="btn btn-outline-light rounded-circle position-relative"
+            title="Чат"
+          >
+            <i className="bi bi-chat-dots"></i>
+            {unreadMessageCount > 0 && (
+              <span className="chat-notification">
+                {unreadMessageCount > 99 ? "99+" : unreadMessageCount}
+              </span>
+            )}
+          </button>
+
+          <button
             onClick={handleEndCall}
             className="btn btn-outline-danger rounded-circle"
           >
@@ -784,6 +878,13 @@ function RoomPage() {
           </button>
         </div>
       </div>
+
+      <Chat
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        messages={chatMessages}
+        onSendMessage={sendChatMessage}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { Xid } from "xid-ts";
-import { Peer, bootstrapPeerConnection } from "../../peer";
+import { bootstrapPeerConnection, ChatMessage, Peer } from "../../peer";
 import { sendStreamMetadata } from "../../utils/streamMetadata";
 import { InboundClientJoinedMessage } from "../inbound";
 import { OutboundOfferMessage } from "../outbound";
@@ -12,6 +12,7 @@ interface ClientJoinedHandlerProps {
   localStream: MediaStream;
   screenStream?: MediaStream | null;
   isScreenSharing?: boolean;
+  onChatMessage?: (message: ChatMessage) => void;
 }
 
 export const clientJoinedHandler = async ({
@@ -22,6 +23,7 @@ export const clientJoinedHandler = async ({
   localStream,
   screenStream,
   isScreenSharing,
+  onChatMessage,
 }: ClientJoinedHandlerProps) => {
   const peer: Peer = {
     id: message.payload.clientId,
@@ -36,7 +38,7 @@ export const clientJoinedHandler = async ({
     videoMuted: false,
     isScreenSharing: false,
   };
-  bootstrapPeerConnection(peer, handlePeersChange);
+  bootstrapPeerConnection(peer, handlePeersChange, onChatMessage);
 
   handlePeersChange((prevPeers) => [...prevPeers, peer]);
 

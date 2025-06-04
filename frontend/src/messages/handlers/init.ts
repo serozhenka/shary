@@ -1,4 +1,4 @@
-import { Peer, bootstrapPeerConnection } from "../../peer";
+import { bootstrapPeerConnection, ChatMessage, Peer } from "../../peer";
 import { sendStreamMetadata } from "../../utils/streamMetadata";
 import { InboundInitMessage } from "../inbound";
 
@@ -8,6 +8,7 @@ interface InitHandlerProps {
   rtcConfig: RTCConfiguration;
   handlePeersChange: (func: (prev: Peer[]) => Peer[]) => void;
   localStream: MediaStream;
+  onChatMessage?: (message: ChatMessage) => void;
 }
 
 export const initHandler = ({
@@ -16,6 +17,7 @@ export const initHandler = ({
   rtcConfig,
   handlePeersChange,
   localStream,
+  onChatMessage,
 }: InitHandlerProps) => {
   console.log("Init message", message.payload.clients.length);
   const peers = message.payload.clients.map((client) => {
@@ -32,7 +34,7 @@ export const initHandler = ({
       videoMuted: false,
       isScreenSharing: false,
     };
-    bootstrapPeerConnection(peer, handlePeersChange);
+    bootstrapPeerConnection(peer, handlePeersChange, onChatMessage);
     return peer;
   });
 
