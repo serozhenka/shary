@@ -25,7 +25,7 @@ func (Room) TableName() string {
 type Participant struct {
 	ID       uint      `gorm:"primaryKey;autoIncrement" json:"id"`
 	UserID   uint      `gorm:"not null" json:"user_id"`
-	RoomID   uint      `gorm:"not null" json:"room_id"`
+	RoomID   uint      `gorm:"not null;constraint:OnDelete:CASCADE" json:"room_id"`
 	JoinedAt time.Time `gorm:"not null;default:now()" json:"joined_at"`
 
 	// Relationships

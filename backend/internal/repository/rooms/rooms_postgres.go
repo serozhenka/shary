@@ -117,8 +117,23 @@ func (r *postgresRepository) DeleteRoom(userID uint, id uint) error {
 		return err
 	}
 
-	// Delete room (participants will be deleted by CASCADE)
-	return r.db.Delete(&room).Error
+	// Start transaction to ensure atomicity
+	tx := r.db.Begin()
+
+	// Delete all participants first
+	if err := tx.Where("room_id = ?", id).Delete(&models.Participant{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Delete room
+	if err := tx.Delete(&room).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+	return nil
 }
 
 // ListRooms returns all rooms where the user is a participant
